@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPDM 專案工時統計儀表板 - 整合版</title>
+
+    <!-- CDN Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Theme Variables */
+        :root {
+            --app-bg: #f1f5f9;
+            --app-bg-stop1: #f1f5f9;
+            --app-bg-stop2: #e2e8f0;
+            --panel-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --input-bg: #f8fafc;
+            --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="slate"] {
+            --app-bg: #1e293b;
+            --app-bg-stop1: #1e293b;
+            --app-bg-stop2: #0f172a;
+            --panel-bg: #334155;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #475569;
+            --input-bg: #1e293b;
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="dark"] {
+            --app-bg: #020617;
+            --app-bg-stop1: #020617;
+            --app-bg-stop2: #000000;
+            --panel-bg: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --input-bg: #020617;
+            --card-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.2);
+        }
+
+        /* Base Element Theme Overrides */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, var(--app-bg-stop1), var(--app-bg-stop2)) fixed !important;
+            background-color: var(--app-bg) !important;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        /* Component Overrides based on theme */
+        [data-theme="dark"] nav,
+        [data-theme="slate"] nav,
+        [data-theme="dark"] .bg-white,
+        [data-theme="slate"] .bg-white {
+            background-color: var(--panel-bg) !important;
+        }
+
+        [data-theme="dark"] .bg-slate-50,
+        [data-theme="slate"] .bg-slate-50 {
+            background-color: var(--input-bg) !important;
+        }
+
+        [data-theme="dark"] .border-slate-200,
+        [data-theme="slate"] .border-slate-200,
+        [data-theme="dark"] .border-slate-100,
+        [data-theme="slate"] .border-slate-100,
+        [data-theme="dark"] .ring-slate-200,
+        [data-theme="slate"] .ring-slate-200 {
+            border-color: var(--border-color) !important;
+            --tw-ring-color: var(--border-color) !important;
+        }
+
+        [data-theme="dark"] .bg-slate-100,
+        [data-theme="slate"] .bg-slate-100 {
+            background-color: var(--input-bg) !important;
+        }
+
+        [data-theme="dark"] .text-slate-800,
+        [data-theme="slate"] .text-slate-800,
+        [data-theme="dark"] .text-slate-700,
+        [data-theme="slate"] .text-slate-700,
+        [data-theme="dark"] .text-slate-600,
+        [data-theme="slate"] .text-slate-600 {
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="dark"] .text-slate-500,
+        [data-theme="slate"] .text-slate-500,
+        [data-theme="dark"] .text-slate-400,
+        [data-theme="slate"] .text-slate-400 {
+            color: var(--text-muted) !important;
+        }
+
+        /* Table & Sticky Header Theme Fix */
+        [data-theme="dark"] thead.bg-slate-50,
+        [data-theme="slate"] thead.bg-slate-50,
+        [data-theme="dark"] .sticky.top-0,
+        [data-theme="slate"] .sticky.top-0 {
+            background-color: var(--panel-bg) !important;
+            color: var(--text-muted) !important;
+        }
+
+        [data-theme="dark"] tr:hover,
+        [data-theme="slate"] tr:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-theme="dark"] .divide-slate-100>*+* {
+            border-color: var(--border-color) !important;
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6 !important;
+        }
+
+        .code-block {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Custom Scrollbar Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--app-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 4px;
+            opacity: 0.3;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-main);
+        }
+
+        /* Dynamic transition */
+        .bg-white,
+        .bg-slate-50,
+        body,
+        nav,
+        section,
+        div,
+        pre {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        [data-theme="dark"] .dark-theme-badge,
+        [data-theme="slate"] .dark-theme-badge {
+            background-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        [data-theme="dark"] .stats-col-total,
+        [data-theme="slate"] .stats-col-total {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: var(--text-main) !important;
+        }
+
+        /* Fix specific Tailwind opacity backgrounds for Dark mode */
+        [data-theme="dark"] .bg-slate-50\/50,
+        [data-theme="slate"] .bg-slate-50\/50 {
+            background-color: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        [data-theme="dark"] .bg-indigo-100\/50,
+        [data-theme="slate"] .bg-indigo-100\/50 {
+            background-color: rgba(99, 102, 241, 0.2) !important;
+            color: #a5b4fc !important;
+        }
+
+        [data-theme="dark"] .bg-blue-50\/50,
+        [data-theme="slate"] .bg-blue-50\/50 {
+            background-color: rgba(59, 130, 246, 0.1) !important;
+        }
+
+        [data-theme="dark"] .bg-blue-50,
+        [data-theme="slate"] .bg-blue-50 {
+            background-color: rgba(59, 130, 246, 0.1) !important;
+            color: #60a5fa !important;
+        }
+
+        [data-theme="dark"] .bg-emerald-50,
+        [data-theme="slate"] .bg-emerald-50 {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            color: #34d399 !important;
+        }
+
+        [data-theme="dark"] .bg-indigo-50,
+        [data-theme="slate"] .bg-indigo-50 {
+            background-color: rgba(99, 102, 241, 0.1) !important;
+            color: #a5b4fc !important;
+        }
+
+        [data-theme="dark"] .bg-amber-50,
+        [data-theme="slate"] .bg-amber-50 {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            color: #fbbf24 !important;
+        }
+
+        /* Instruction Panel Theme Overrides */
+        [data-theme="dark"] .from-amber-50,
+        [data-theme="slate"] .from-amber-50 {
+            --tw-gradient-from: var(--panel-bg) !important;
+        }
+
+        [data-theme="dark"] .to-orange-50,
+        [data-theme="slate"] .to-orange-50 {
+            --tw-gradient-to: var(--panel-bg) !important;
+        }
+
+        [data-theme="dark"] .border-amber-200,
+        [data-theme="slate"] .border-amber-200 {
+            border-color: var(--border-color) !important;
+        }
+
+        [data-theme="dark"] .text-amber-700,
+        [data-theme="slate"] .text-amber-700 {
+            color: #fbbf24 !important;
+        }
+
+        [data-theme="dark"] .text-amber-600,
+        [data-theme="slate"] .text-amber-600 {
+            color: #f59e0b !important;
+        }
+
+        [data-theme="dark"] .text-indigo-700,
+        [data-theme="slate"] .text-indigo-700 {
+            color: #818cf8 !important;
+        }
+
+        [data-theme="dark"] .border-amber-100,
+        [data-theme="slate"] .border-amber-100 {
+            border-color: var(--border-color) !important;
+        }
+
+        /* Custom accent classes for instruction panel */
+        .accent-amber {
+            color: #f59e0b;
+        }
+
+        .accent-amber-hover:hover {
+            color: #d97706;
+        }
+
+        .accent-indigo {
+            color: #6366f1;
+        }
+
+        .accent-indigo-hover:hover {
+            color: #4f46e5;
+        }
+
+        .accent-indigo-border {
+            border-color: #e0e7ff;
+        }
+
+        [data-theme="dark"] .accent-amber,
+        [data-theme="slate"] .accent-amber {
+            color: #fbbf24 !important;
+        }
+
+        [data-theme="dark"] .accent-amber-hover:hover,
+        [data-theme="slate"] .accent-amber-hover:hover {
+            color: #fcd34d !important;
+        }
+
+        [data-theme="dark"] .accent-indigo,
+        [data-theme="slate"] .accent-indigo {
+            color: #818cf8 !important;
+        }
+
+        [data-theme="dark"] .accent-indigo-hover:hover,
+        [data-theme="slate"] .accent-indigo-hover:hover {
+            color: #a5b4fc !important;
+        }
+
+        [data-theme="dark"] .accent-indigo-border,
+        [data-theme="slate"] .accent-indigo-border {
+            border-color: var(--border-color) !important;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <!-- Dynamic Fixed Header Container -->
+    <div class="sticky top-0 z-50 shadow-sm">
+        <nav class="bg-white border-b border-slate-200">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between h-16 items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2.5 rounded-xl">
+                            <i class="fa-solid fa-chart-pie text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-baseline gap-2">
+                                <h1
+                                    class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                                    CPDM 工時統計儀表板
+                                </h1>
+                                <span class="text-[10px] font-bold text-slate-400 opacity-60 select-none">v2.0</span>
+                            </div>
+                            <p class="text-xs text-slate-500">Antigravity 對話記錄分析 · 整合版</p>
+                        </div>
+                    </div>
+                    <!-- Right Side Combined Controls -->
+                    <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-sm">
+                        <!-- Theme Selector -->
+                        <div class="flex items-center gap-1">
+                            <button onclick="setTheme('light')" id="theme-btn-light"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-white"
+                                title="亮色模式">
+                                <i class="fa-solid fa-sun text-sm text-amber-500"></i>
+                            </button>
+                            <button onclick="setTheme('slate')" id="theme-btn-slate"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-slate-700 hover:text-white"
+                                title="中色模式 (Slate)">
+                                <i class="fa-solid fa-cloud-moon text-sm text-slate-500"></i>
+                            </button>
+                            <button onclick="setTheme('dark')" id="theme-btn-dark"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-slate-900 hover:text-white"
+                                title="深色模式">
+                                <i class="fa-solid fa-moon text-sm text-indigo-400"></i>
+                            </button>
+                        </div>
+
+                        <div class="h-6 w-[1px] bg-slate-200 mx-1"></div>
+
+                        <!-- Font Size Controller -->
+                        <div class="flex items-center gap-3 px-2 py-0.5">
+                            <span class="text-[10px] font-bold text-slate-400 select-none">A</span>
+                            <input type="range" id="fontSizeSlider" min="12" max="22" value="16" step="1"
+                                class="w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                oninput="updateFontSize(this.value)" title="調整全站字體大小">
+                            <span class="text-sm font-bold text-slate-400 select-none">A</span>
+                            <div class="h-4 w-[1px] bg-slate-200 mx-1"></div>
+                            <span id="fontSizeValue"
+                                class="text-[10px] font-mono font-bold text-blue-600 w-8">16px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Tabs -->
+        <div class="bg-white border-b border-slate-200">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex gap-6 overflow-x-auto no-scrollbar">
+                    <button id="tabData" onclick="switchTab('data')"
+                        class="py-4 text-sm font-medium tab-active whitespace-nowrap">
+                        <i class="fa-solid fa-database mr-2"></i>數據來源
+                    </button>
+                    <button id="tabDashboard" onclick="switchTab('dashboard')"
+                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-chart-simple mr-2"></i>視覺化分析
+                    </button>
+                    <button id="tabHistory" onclick="switchTab('history')"
+                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-clock-rotate-left mr-2"></i>專案歷史
+                    </button>
+                    <button id="tabReport" onclick="switchTab('report')"
+                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-file-lines mr-2"></i>報告輸出
+                    </button>
+                    <button id="tabStats" onclick="switchTab('stats')"
+                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-calendar-day mr-2"></i>人員時數
+                    </button>
+                    <button id="tabLoop" onclick="switchTab('loop')"
+                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-bolt-lightning mr-2"></i>開發循環診斷
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="py-8">
+        <div class="max-w-7xl mx-auto px-6">
+
+            <!-- Tab 1: Data Source -->
+            <section id="panelData" class="space-y-6">
+                <!-- Filter Controls -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-semibold mb-6 flex items-center">
+                        <i class="fa-solid fa-sliders mr-2 text-blue-500"></i>
+                        篩選條件
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">專案篩選</label>
+                            <select id="filterProject" onchange="applyFilters()"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="">全部專案</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">開始日期</label>
+                            <input type="date" id="filterStart"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">結束日期</label>
+                            <input type="date" id="filterEnd"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">人員 (可複選)</label>
+                            <div id="filterEngineerContainer" class="relative">
+                                <div id="engineerSelectDisplay" onclick="toggleEngineerDropdown()"
+                                    class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm cursor-pointer flex justify-between items-center">
+                                    <span id="selectedEngCount" class="truncate">全部人員</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                                </div>
+                                <div id="engineerDropdown"
+                                    class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-[60] p-2 max-h-48 overflow-y-auto w-48 mx-auto md:w-full">
+                                    <!-- Checkboxes will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="applyFilters()"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-filter"></i>
+                                套用篩選
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Source Options -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Option 1: Run Script (Recommended) -->
+                    <div
+                        class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl shadow-sm border border-amber-200 p-6 transition-all duration-300">
+                        <h3 class="text-base font-semibold mb-4 flex items-center text-slate-800">
+                            <i class="fa-solid fa-terminal mr-2 text-amber-600"></i>
+                            指令與數據更新
+                        </h3>
+
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="text-[10px] text-amber-700 font-bold">1. 生成專案互動歷史</p>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1 border-r border-slate-200 pr-2">
+                                        <i class="fa-solid fa-language text-[10px] text-slate-400"></i>
+                                        <select id="targetLanguage"
+                                            class="bg-transparent text-[10px] text-slate-500 border-none focus:ring-0 p-0 cursor-pointer">
+                                            <option value="zh-TW">繁體中文</option>
+                                            <option value="en">English</option>
+                                            <option value="ja">日本語</option>
+                                        </select>
+                                    </div>
+                                    <button
+                                        onclick="copyToClipboard('node generate_interaction_history.js --format=json')"
+                                        class="text-[10px] text-amber-600 hover:text-amber-700 flex items-center gap-1 transition-colors font-medium">
+                                        <i class="fa-solid fa-copy"></i> 複製
+                                    </button>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-slate-900 border border-slate-700 text-slate-300 p-2 rounded-lg text-[9px] font-mono mb-2 shadow-inner">
+                                node generate_interaction_history.js --format=json
+                            </div>
+                        </div>
+
+                        <!-- Command Group 2: Usage -->
+                        <div class="mb-4 pt-4 border-t border-amber-100">
+                            <div class="flex items-center justify-between mb-1">
+                                <p class="text-[10px] text-indigo-700 font-bold">2. 更新模型使用量</p>
+                                <button onclick="copyToClipboard('node get_usage.js')"
+                                    class="text-[10px] text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors font-medium">
+                                    <i class="fa-solid fa-copy"></i> 複製
+                                </button>
+                            </div>
+                            <div
+                                class="bg-slate-900 border border-slate-700 text-slate-300 p-2 rounded-lg text-[9px] font-mono mb-2 shadow-inner">
+                                node get_usage.js
+                            </div>
+                            <div class="flex items-center justify-between text-[10px] text-slate-500 mb-2">
+                                <span><i class="fa-solid fa-clock-rotate-left mr-1 opacity-70"></i>重置倒數: <span
+                                        id="usageCountdown"
+                                        class="text-slate-800 font-bold font-mono">--:--:--</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Import Buttons -->
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <label
+                                class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95">
+                                <i class="fa-solid fa-file-import text-amber-500"></i>
+                                匯入歷史
+                                <input type="file" id="historyJsonInput" accept=".json" class="hidden"
+                                    onchange="loadEngineerData(event)">
+                            </label>
+                            <button onclick="uploadUsageFile()"
+                                class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95">
+                                <i class="fa-solid fa-chart-bar text-indigo-500"></i>
+                                匯入量能
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Option 2: Antigravity Model Usage -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <i class="fa-solid fa-chart-line text-4xl text-blue-500"></i>
+                        </div>
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-base font-semibold flex items-center text-slate-800">
+                                <i class="fa-solid fa-microchip mr-2 text-indigo-500"></i>
+                                當前模型能耗狀態
+                            </h3>
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">實時分析</span>
+                        </div>
+
+                        <div id="modelUsageList" class="space-y-3">
+                            <!-- Initial Loading State / Placeholder -->
+                            <div class="flex flex-col items-center justify-center py-8 opacity-40">
+                                <i class="fa-solid fa-database text-2xl mb-2"></i>
+                                <p class="text-[10px]">請點擊左側「匯入量能」載入真實數據</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Option 3: Import Engineer Data -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h3 class="text-base font-semibold mb-4 flex items-center">
+                            <i class="fa-solid fa-users-gear mr-2 text-emerald-500"></i>
+                            匯入工程師數據
+                        </h3>
+                        <div class="mb-4">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">選擇或輸入工程師姓名</label>
+                            <input type="text" list="engineerList" id="engineerNameInput"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                                placeholder="例如: Arthur">
+                            <datalist id="engineerList">
+                                <option value="Arthur">
+                                <option value="Steve">
+                                <option value="Jessica">
+                            </datalist>
+                        </div>
+                        <label
+                            class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-file-import"></i>
+                            匯入該員 JSON
+                            <input type="file" id="engineerJsonInput" accept=".json" class="hidden"
+                                onchange="loadEngineerData(event)">
+                        </label>
+                        <p class="text-xs text-slate-400 mt-3 text-center">將數據合併至現有視圖</p>
+                    </div>
+                </div>
+
+                <!-- Raw Data Preview -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-semibold flex items-center">
+                            <i class="fa-solid fa-table mr-2 text-amber-500"></i>
+                            原始數據預覽
+                        </h3>
+                        <span id="dataCount"
+                            class="text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-full">尚未載入</span>
+                    </div>
+                    <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-100 rounded-xl">
+                        <table class="w-full text-sm">
+                            <thead class="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3 text-left w-16">序號</th>
+                                    <th class="px-4 py-3 text-left">對話標題</th>
+                                    <th class="px-4 py-3 text-left">專案</th>
+                                    <th class="px-4 py-3 text-left">人員</th>
+                                    <th class="px-4 py-3 text-left">類別</th>
+                                    <th class="px-4 py-3 text-right">工時</th>
+                                    <th class="px-4 py-3 text-left">更新時間</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rawDataTable">
+                                <tr>
+                                    <td colspan="5" class="px-4 py-8 text-center text-slate-400">請選擇數據來源</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 2: Dashboard -->
+            <section id="panelDashboard" class="space-y-6 hidden">
+                <!-- Summary Cards -->
+                <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <!-- Placeholder -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-pulse">
+                        <div class="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
+                        <div class="h-8 bg-slate-200 rounded w-1/3"></div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="text-base font-semibold mb-6 flex items-center">
+                            <i class="fa-solid fa-chart-bar mr-2 text-blue-500"></i>
+                            工時投入分布
+                        </h3>
+                        <div class="relative h-72">
+                            <canvas id="hoursChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="text-base font-semibold mb-6 flex items-center">
+                            <i class="fa-solid fa-chart-pie mr-2 text-rose-500"></i>
+                            類別分布
+                        </h3>
+                        <div class="relative h-72 flex items-center justify-center">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Table -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h3 class="text-base font-semibold flex items-center">
+                            <i class="fa-solid fa-list-check mr-2 text-emerald-500"></i>
+                            詳細記錄列表
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-100 rounded-xl">
+                        <table class="w-full text-sm border-collapse">
+                            <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                                <tr>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-3 text-left w-16 z-10 shadow-sm">序號</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-3 text-left z-10 shadow-sm">對話標題</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-3 text-left z-10 shadow-sm">人員</th>
+                                    <th
+                                        class="sticky top-0 bg-slate-50 px-6 py-3 text-left min-w-[140px] z-10 shadow-sm">
+                                        類別
+                                    </th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-3 text-left z-10 shadow-sm">狀態</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-3 text-right z-10 shadow-sm">工時</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-3 text-left z-10 shadow-sm">摘要</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailTableBody">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-slate-400">請先載入數據</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 3: Report -->
+            <section id="panelReport" class="space-y-6 hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-semibold mb-6 flex items-center">
+                        <i class="fa-solid fa-file-export mr-2 text-indigo-500"></i>
+                        報告輸出設定
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">輸出格式</label>
+                            <select id="exportFormat"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="md">Markdown (.md)</option>
+                                <option value="json">JSON (.json)</option>
+                                <option value="dashboard">Dashboard 格式 (.md)</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col justify-center gap-1.5">
+                            <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-600">
+                                <input type="checkbox" id="includeStaffStats" checked class="rounded text-indigo-600">
+                                人員時數統計
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-600">
+                                <input type="checkbox" id="includeDailyStats" checked class="rounded text-indigo-600">
+                                人員每日工時
+                            </label>
+                        </div>
+                        <div></div> <!-- Spacer -->
+                        <div class="flex items-end">
+                            <button onclick="generateReport()"
+                                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                產生報告
+                            </button>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="downloadReport()"
+                                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-download"></i>
+                                下載報告
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Preview -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-semibold flex items-center">
+                            <i class="fa-solid fa-eye mr-2 text-blue-500"></i>
+                            報告預覽
+                        </h3>
+                        <button onclick="copyReport()"
+                            class="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
+                            <i class="fa-solid fa-copy"></i> 複製
+                        </button>
+                    </div>
+                    <pre id="reportPreview"
+                        class="code-block bg-slate-900 text-slate-300 p-6 rounded-xl text-sm overflow-auto max-h-[600px] whitespace-pre-wrap">
+請先載入數據並點擊「產生報告」
+                </pre>
+                </div>
+            </section>
+
+            <!-- Tab 4: Project History -->
+            <section id="panelHistory" class="space-y-6 hidden">
+                <!-- Project Selection -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-semibold mb-6 flex items-center">
+                        <i class="fa-solid fa-folder-tree mr-2 text-amber-500"
+                            title="產生格式參照 project_interaction_history.md，包含專案概述、統計、詳細互動記錄等。"></i>
+                        專案開發互動歷史清單
+                        <i class="fa-solid fa-circle-info ml-2 text-slate-400 text-xs cursor-help"
+                            title="產生格式參照 project_interaction_history.md，包含專案概述、統計、詳細互動記錄等。"></i>
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">選擇專案</label>
+                            <select id="historyProjectSelect"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="">-- 請選擇專案 --</option>
+                            </select>
+                        </div>
+                        <div></div> <!-- Spacer -->
+                        <div></div> <!-- Spacer -->
+                        <div class="flex items-end">
+                            <button onclick="generateProjectHistory()"
+                                class="w-full bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-scroll"></i>
+                                產生專案歷史
+                            </button>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="downloadProjectHistory()"
+                                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-download"></i>
+                                下載報告
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Preview -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-semibold flex items-center">
+                            <i class="fa-solid fa-eye mr-2 text-blue-500"></i>
+                            專案歷史報告預覽
+                        </h3>
+                        <button onclick="copyProjectHistory()"
+                            class="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
+                            <i class="fa-solid fa-copy"></i> 複製
+                        </button>
+                    </div>
+                    <pre id="historyPreview"
+                        class="code-block bg-slate-900 text-slate-300 p-6 rounded-xl text-sm overflow-auto max-h-[600px] whitespace-pre-wrap">
+請選擇專案並點擊「產生專案歷史」
+                </pre>
+                </div>
+            </section>
+
+            <!-- Tab 5: Staff Daily Stats -->
+            <section id="panelStats" class="space-y-6 hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-semibold flex items-center">
+                            <i class="fa-solid fa-calendar-check mr-2 text-indigo-500"></i>
+                            人員每日工時統計
+                        </h2>
+                        <div class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium">
+                            自動彙整數據
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-100 rounded-xl">
+                        <table class="w-full text-sm border-collapse">
+                            <thead id="statsTableHeader"
+                                class="bg-slate-50 text-slate-500 font-medium sticky top-0 z-10 shadow-sm border-b border-slate-200">
+                                <!-- Headers will be dynamic -->
+                            </thead>
+                            <tbody id="statsTableBody" class="divide-y divide-slate-100">
+                                <!-- Rows will be dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <p class="text-xs text-slate-500 italic text-center">
+                            <i class="fa-solid fa-info-circle mr-1"></i>
+                            統計對象為目前已匯入且符合篩選條件的所有人員對話記錄。
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 6: Dev-Loop Diagnostics -->
+            <section id="panelLoop" class="space-y-6 hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-semibold flex items-center">
+                            <i class="fa-solid fa-bolt-lightning mr-2 text-yellow-500"></i>
+                            開發循環效能診斷 (Dev-Loop)
+                        </h2>
+                        <div class="text-xs text-slate-400">
+                            分析「AI 回答後」至「使用者下次提問」的消化與研發效率
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-100 rounded-xl">
+                        <table class="w-full text-sm border-collapse">
+                            <thead class="text-slate-500 font-medium">
+                                <tr class="bg-slate-50">
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-4 text-left z-10 shadow-sm w-16">序號</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-4 text-left z-10 shadow-sm w-32">人員</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-4 text-left z-10 shadow-sm">對話序列 (任務)
+                                    </th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-4 text-center z-10 shadow-sm">任務複雜度</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-4 text-center z-10 shadow-sm">實際消化</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-4 text-center z-10 shadow-sm">總時長</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-4 text-center z-10 shadow-sm">合理時間</th>
+                                    <th class="sticky top-0 bg-slate-50 px-6 py-4 text-left z-10 shadow-sm">效率評價</th>
+                                </tr>
+                            </thead>
+                            <tbody id="loopTableBody" class="divide-y divide-slate-100">
+                                <!-- Rows will be dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div
+                        class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-2">📊 診斷標準說明</h4>
+                            <ul class="text-xs text-slate-500 space-y-2">
+                                <li><span class="text-indigo-600 font-bold">● 實際消化時間</span>: 測量兩次任務間的「開發者研究/測試」時段。若超過 2
+                                    小時，系統會自動校正為合理值 (顯示 🌙)，不影響效能評比。</li>
+                                <li><span class="text-emerald-600 font-bold">● 總時長</span>: 本次對話的最終投入工時 (執行 + 研究)。</li>
+                                <li><span class="text-amber-600 font-bold">● 效率評價</span>: 對比實際與 AI 估算時間。差距 ±30%
+                                    內視為「精準」，代表開發與 AI 的節奏配合完美。</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-2">🧠 演算法核心 (Formula)</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed font-mono">
+                                AI 估算合理時間 = 6m (基礎) + (複雜度評分 × 4m)<br>
+                                複雜度評分 = (檔案大小/100KB) + (Artifacts × 2)<br>
+                                總時長 = 執行工時 (LifeSpan * 0.8) + 有效研究工時
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // ====== Global State ======
+        let currentData = [];
+        let hoursChartIns = null;
+        let categoryChartIns = null;
+
+
+
+        // ====== Tab Switching ======
+        function switchTab(tabName) {
+            // Hide all panels - updated selector to handle alignment div
+            document.querySelectorAll('main div > section').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Reset tab styles
+            ['tabData', 'tabDashboard', 'tabHistory', 'tabReport', 'tabStats', 'tabLoop'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('tab-active');
+                    el.classList.add('text-slate-500');
+                }
+            });
+
+            // Show selected panel and activate tab
+            document.getElementById('panel' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
+            document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('tab-active');
+            document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('text-slate-500');
+        }
+
+        // ====== Helper Functions ======
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ 指令已複製到剪貼簿，請至終端機執行');
+            });
+        }
+
+        // ====== Data Loading ======
+        function loadEngineerData(event) {
+            const engineerName = document.getElementById('engineerNameInput').value.trim();
+            if (!engineerName) {
+                alert('請先輸入或選擇工程師姓名！這對於數據歸類非常關鍵。');
+                event.target.value = ''; // Reset file input
+                return;
+            }
+
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                try {
+                    const jsonData = JSON.parse(e.target.result);
+                    let newData = [];
+                    if (jsonData.conversations) {
+                        newData = jsonData.conversations;
+                    } else if (Array.isArray(jsonData)) {
+                        newData = jsonData;
+                    }
+
+                    // --- Integrity Verification ---
+                    if (jsonData.integrity) {
+                        const content = JSON.stringify(newData);
+                        const msgUint8 = new TextEncoder().encode(content);
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+                        const hashArray = Array.from(new Uint8Array(hashBuffer));
+                        const calculatedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+                        if (calculatedHash !== jsonData.integrity) {
+                            if (!confirm('⚠️ 警告：資料完整性檢查失敗！此檔案的內容可能已被手動修改過，與原始生成時不符。\n\n是否仍要強制匯入？')) {
+                                event.target.value = '';
+                                return;
+                            }
+                        } else {
+                            console.log('✅ 資料完整性驗證通過');
+                        }
+                    } else {
+                        console.warn('⚠️ 此檔案不包含完整性簽章，無法驗證是否被修改過。');
+                    }
+
+                    // Attach engineer name to each record and preserve originals for translation
+                    newData = newData.map(c => ({
+                        ...c,
+                        engineer: engineerName,
+                        _origTitle: c.title,
+                        _origSummary: c.summary
+                    }));
+
+                    // Append and unique
+                    currentData = currentData.concat(newData);
+
+                    // Deduplicate by ID
+                    const uniqueData = Array.from(new Map(currentData.map(item => [item.id, item])).values());
+
+                    // --- 重要：建立全域一致的序號系統 ---
+                    // 1. 依照時間正序排列 (確保歷史脈絡一致)
+                    uniqueData.sort((a, b) => new Date(a.modifiedTime) - new Date(b.modifiedTime));
+
+                    // 2. 分配永久序號 _seq
+                    currentData = uniqueData.map((c, idx) => ({
+                        ...c,
+                        _seq: idx + 1
+                    }));
+
+                    // Trigger auto-translation if needed
+                    await batchTranslateMetadata();
+
+                    updateEngineerFilterOptions();
+                    updateProjectFilterOptions();
+                    applyFilters();
+                    alert(`✅ 已匯入工程師 ${engineerName} 的資料，共 ${newData.length} 筆！`);
+                } catch (err) {
+                    alert('❌ JSON 解析失敗: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ====== Filter Utilities ======
+        function toggleEngineerDropdown() {
+            const dropdown = document.getElementById('engineerDropdown');
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        // ====== Translation Logic ======
+        async function translateText(text, targetLang) {
+            if (!text || text.trim() === '') return text;
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                return data[0].map(item => item[0]).join('');
+            } catch (err) {
+                console.error('Translation failed:', err);
+                return text;
+            }
+        }
+
+        async function batchTranslateMetadata() {
+            const targetLang = document.getElementById('targetLanguage').value;
+            const loadingOverlay = showLoading('正在轉換語言內容...');
+
+            try {
+                for (let conv of currentData) {
+                    // Start translation for title and summary if they haven't been translated to this lang yet
+                    if (!conv._lastLang || conv._lastLang !== targetLang) {
+                        const titleToTranslate = conv._origTitle || conv.title;
+                        const summaryToTranslate = conv._origSummary || conv.summary;
+
+                        // Concurrent translation for performance within one conversation
+                        const [tTitle, tSummary] = await Promise.all([
+                            translateText(titleToTranslate, targetLang),
+                            translateText(summaryToTranslate, targetLang)
+                        ]);
+
+                        conv.title = tTitle;
+                        conv.summary = tSummary;
+                        conv._lastLang = targetLang;
+                    }
+                }
+            } finally {
+                hideLoading(loadingOverlay);
+            }
+        }
+
+        // 字體大小控制
+        function updateFontSize(size) {
+            document.documentElement.style.fontSize = size + 'px';
+            document.getElementById('fontSizeValue').textContent = size + 'px';
+            localStorage.setItem('dashboard-font-size', size);
+        }
+
+        // 主題切換
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('dashboard-theme', theme);
+
+            // 更新按鈕樣式
+            ['light', 'slate', 'dark'].forEach(t => {
+                const btn = document.getElementById(`theme-btn-${t}`);
+                if (btn) {
+                    if (t === theme) {
+                        btn.classList.add('bg-white', 'shadow-sm', 'ring-1', 'ring-slate-200');
+                        btn.classList.remove('opacity-50');
+                    } else {
+                        btn.classList.remove('bg-white', 'shadow-sm', 'ring-1', 'ring-slate-200');
+                        btn.classList.add('opacity-50');
+                    }
+                }
+            });
+
+            // 重新渲染圖表以適應顏色 (如果已經載入數據)
+            if (currentData.length > 0) {
+                renderDashboard(getFilteredData());
+            }
+        }
+
+        // 初始化
+        function initDashboard() {
+            // 恢復字體大小
+            const savedSize = localStorage.getItem('dashboard-font-size') || '16';
+            document.getElementById('fontSizeSlider').value = savedSize;
+            updateFontSize(savedSize);
+
+            // 恢復主題
+            const savedTheme = localStorage.getItem('dashboard-theme') || 'light';
+            setTheme(savedTheme);
+
+            const loadingOverlay = showLoading('初始化中...');
+            setTimeout(() => {
+                hideLoading(loadingOverlay);
+            }, 500);
+        }
+
+        initDashboard();
+
+        function showLoading(msg) {
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center';
+            overlay.innerHTML = `
+                <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4">
+                    <div class="animate-spin text-blue-600 text-3xl"><i class="fa-solid fa-spinner"></i></div>
+                    <p class="text-sm font-medium text-slate-700">${msg}</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            return overlay;
+        }
+
+        function hideLoading(overlay) {
+            if (overlay && overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }
+
+        // Add listener for language change
+        document.getElementById('targetLanguage').addEventListener('change', async () => {
+            await batchTranslateMetadata();
+            applyFilters();
+        });
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function (e) {
+            const container = document.getElementById('filterEngineerContainer');
+            if (container && !container.contains(e.target)) {
+                const dropdown = document.getElementById('engineerDropdown');
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+
+        function updateProjectFilterOptions() {
+            const projects = [...new Set(currentData.map(c => c.project))].filter(p => p && p !== '未分類').sort();
+            const filterProject = document.getElementById('filterProject');
+            const historyProjectSelect = document.getElementById('historyProjectSelect');
+
+            // Clear and add "All" option for main filter
+            const currentProjFilter = filterProject.value;
+            filterProject.innerHTML = '<option value="">全部專案</option>';
+            projects.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                filterProject.appendChild(opt);
+            });
+            filterProject.value = currentProjFilter; // Restore selection if possible
+
+            // Clear and add "Select" option for history filter
+            const currentHistFilter = historyProjectSelect.value;
+            historyProjectSelect.innerHTML = '<option value="">-- 請選擇專案 --</option>';
+            projects.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                historyProjectSelect.appendChild(opt);
+            });
+            historyProjectSelect.value = currentHistFilter;
+        }
+
+        function updateEngineerFilterOptions() {
+            const engineers = [...new Set(currentData.filter(c => c.engineer).map(c => c.engineer))];
+            const dropdown = document.getElementById('engineerDropdown');
+            if (!dropdown) return;
+
+            dropdown.innerHTML = engineers.length === 0
+                ? '<p class="text-xs text-slate-400 p-2 text-center">無人員資料</p>'
+                : engineers.map(name => `
+                    <label class="flex items-center gap-2 p-1.5 hover:bg-slate-50 rounded cursor-pointer text-sm">
+                        <input type="checkbox" name="engFilter" value="${name}" checked onchange="updateSelectedEngCount()" class="rounded text-blue-600 focus:ring-blue-500">
+                        ${name}
+                    </label>
+                `).join('');
+
+            updateSelectedEngCount();
+        }
+
+        function updateSelectedEngCount() {
+            const checks = document.querySelectorAll('input[name="engFilter"]:checked');
+            const total = document.querySelectorAll('input[name="engFilter"]').length;
+            const display = document.getElementById('selectedEngCount');
+            if (!display) return;
+
+            if (checks.length === 0) {
+                display.textContent = '未選擇人員';
+                display.classList.add('text-red-500');
+            } else if (checks.length === total) {
+                display.textContent = '全部人員';
+                display.classList.remove('text-red-500');
+            } else {
+                display.textContent = `已選擇 ${checks.length} 人`;
+                display.classList.remove('text-red-500');
+            }
+        }
+
+        function getFilteredData() {
+            const projectFilter = document.getElementById('filterProject').value;
+            const startDateStr = document.getElementById('filterStart').value;
+            const endDateStr = document.getElementById('filterEnd').value;
+            const startDate = startDateStr ? new Date(startDateStr) : null;
+            const endDate = endDateStr ? new Date(endDateStr + 'T23:59:59') : null;
+
+            const selectedEngs = Array.from(document.querySelectorAll('input[name="engFilter"]:checked')).map(cb => cb.value);
+
+            return currentData.filter(c => {
+                if (projectFilter && c.project !== projectFilter) return false;
+                if (selectedEngs.length > 0 && !selectedEngs.includes(c.engineer)) return false;
+
+                const cDate = new Date(c.modifiedTime);
+                if (startDate && cDate < startDate) return false;
+                if (endDate && cDate > endDate) return false;
+                return true;
+            });
+        }
+
+        function applyFilters() {
+            const filtered = getFilteredData();
+            renderRawTable(filtered);
+            renderDashboard(filtered);
+            renderStaffDailyStats(filtered);
+            renderDevLoop(filtered); // Ensure this is called with filtered data that contains researchHours
+            document.getElementById('dataCount').textContent = `${filtered.length} 筆資料`;
+        }
+
+        function renderDevLoop(data) {
+            const body = document.getElementById('loopTableBody');
+            if (!body) return;
+
+            if (data.length < 2) {
+                body.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-slate-400">數據不足 (需至少 2 筆對話) 以進行間隔分析</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = data.map((c, i) => {
+                const gapMinutes = c.thinkingGapMinutes || 0;
+                const reasonableTime = Math.round((c.complexityScore || 1) * 4 + 6);
+                // 核心評價邏輯 - 改用「總時長 (c.hours)」作為評價基準
+                const totalWorkMins = Math.round((c.hours || 0) * 60);
+                const efficiencyPct = Math.round((totalWorkMins / (reasonableTime || 1)) * 100);
+
+                if (totalWorkMins < (reasonableTime * 0.5)) {
+                    performance = '卓越 (超效)';
+                    statusClass = 'text-indigo-600 font-bold';
+                    light = '🟢';
+                } else if (totalWorkMins < (reasonableTime * 1.3)) {
+                    performance = '深度消化 (精準)';
+                    statusClass = 'text-emerald-600 font-bold';
+                    light = '🟢';
+                } else if (totalWorkMins < (reasonableTime * 2.5)) {
+                    performance = '需要更多測試 (普通)';
+                    statusClass = 'text-amber-600';
+                    light = '🟡';
+                } else {
+                    performance = '遇到瓶頸 (遲緩)';
+                    statusClass = 'text-rose-600';
+                    light = '🔴';
+                }
+
+                const efficiencyTooltip = `效率計算: ${totalWorkMins}m (實際) / ${reasonableTime}m (合理) = ${efficiencyPct}%`;
+
+                // 處理校正標註 (取代原本的戰略性休息標籤)
+                let correctedSuffix = '';
+                let moonIcon = '';
+                if (i > 0 && c.researchHours > 0 && gapMinutes > 120) {
+                    correctedSuffix = ' (校正後)';
+                    moonIcon = '🌙 ';
+                    statusClass += ' italic';
+                }
+
+                // 第一筆特別標註 (起訖仍保留評價)
+                if (i === 0) {
+                    performance = '專案啟動 / ' + performance;
+                }
+
+                const formatTime = (timeInMin) => {
+                    if (i === 0 && timeInMin === 0) return '-';
+                    const mins = Math.round(timeInMin);
+                    return mins >= 60 ? `${(mins / 60).toFixed(1)}h` : `${mins}m`;
+                };
+
+                const formatHourMin = (isoStr) => {
+                    const d = new Date(isoStr);
+                    const h = d.getHours().toString().padStart(2, '0');
+                    const m = d.getMinutes().toString().padStart(2, '0');
+                    const s = d.getSeconds().toString().padStart(2, '0');
+                    return `${h}:${m}:${s}`;
+                };
+
+                // 計算「循環耗時」(Cycle Time): 從上一筆結束到本筆結束的原始物理時間
+                let durationMs = 0;
+                if (i > 0) {
+                    durationMs = new Date(c.modifiedTime) - new Date(data[i - 1].modifiedTime);
+                } else {
+                    durationMs = new Date(c.modifiedTime) - new Date(c.createdTime);
+                }
+
+                const durHours = Math.floor(durationMs / 3600000);
+                const durMin = Math.floor((durationMs % 3600000) / 60000);
+                const durSec = Math.floor((durationMs % 60000) / 1000);
+
+                let durationLabel = "";
+                if (durHours > 0) {
+                    durationLabel = `${durHours}h ${durMin}m`;
+                } else if (durMin > 0) {
+                    durationLabel = `${durMin}m ${durSec}s`;
+                } else {
+                    durationLabel = `${durSec}s`;
+                }
+
+                const timeRange = `${formatHourMin(c.createdTime)} - ${formatHourMin(c.modifiedTime)} <span class="bg-indigo-100/50 text-indigo-600 px-2 py-0.5 rounded-md ml-2 font-mono font-medium shadow-sm" title="原始物理循環耗時 (含間隔)">耗時: ${durationLabel}</span>`;
+
+                const displayTime = Math.round((c.activeHours || 0) * 60);
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 text-slate-400 text-xs">${c._seq}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 dark-theme-badge shadow-sm border border-slate-200">
+                                <i class="fa-solid fa-user-gear mr-1.5 text-slate-400"></i>${c.engineer || '未指定'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-slate-800 text-base mb-1">${c.title}</div>
+                            <div class="text-xs text-slate-500 flex items-center gap-1">
+                                <i class="fa-regular fa-clock opacity-60"></i>${timeRange}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="bg-slate-100 text-slate-600 dark-theme-badge px-2 py-0.5 rounded text-xs border border-slate-200">LV.${Math.ceil(c.complexityScore)}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center font-mono ${displayTime >= 60 ? 'text-amber-600' : 'text-slate-700'}">
+                            ${formatTime(displayTime)}
+                        </td>
+                        <td class="px-6 py-4 text-center font-mono text-slate-700 font-bold">
+                            ${formatTime(c.hours * 60)}
+                        </td>
+                        <td class="px-6 py-4 text-center font-mono text-slate-500">
+                            ~${formatTime(reasonableTime)}
+                        </td>
+                        <td class="px-6 py-4 text-left text-xs ${statusClass}" title="${efficiencyTooltip}">
+                            ${light} ${moonIcon}${performance}${correctedSuffix}
+                        </td>
+                    </tr>
+                `;
+            }).reverse().join(''); // Show latest on top
+        }
+
+        function renderStaffDailyStats(data) {
+            const engineers = [...new Set(data.filter(c => c.engineer).map(c => c.engineer))].sort();
+            const dailyData = {};
+
+            data.forEach(c => {
+                const date = new Date(c.modifiedTime).toLocaleDateString('zh-TW');
+                const eng = c.engineer || '未指定';
+                if (!dailyData[date]) dailyData[date] = {};
+                if (!dailyData[date][eng]) dailyData[date][eng] = 0;
+                dailyData[date][eng] += c.hours;
+            });
+
+            const dates = Object.keys(dailyData).sort((a, b) => new Date(b) - new Date(a));
+            const header = document.getElementById('statsTableHeader');
+            const body = document.getElementById('statsTableBody');
+
+            // Render Header
+            header.innerHTML = `
+                <tr>
+                    <th class="px-6 py-4 text-left">日期</th>
+                    ${engineers.map(eng => `<th class="px-6 py-4 text-center">${eng}</th>`).join('')}
+                    <th class="px-6 py-4 text-right">當日總計</th>
+                </tr>
+            `;
+
+            // Render Body
+            if (dates.length === 0) {
+                body.innerHTML = `<tr><td colspan="${engineers.length + 2}" class="px-6 py-10 text-center text-slate-400">尚無符合條件的時數統計</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = dates.map(date => {
+                const engHours = engineers.map(eng => dailyData[date][eng] || 0);
+                const dayTotal = engHours.reduce((s, h) => s + h, 0);
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-slate-700">${date}</td>
+                        ${engHours.map(h => `
+                            <td class="px-6 py-4 text-center ${h > 0 ? 'text-indigo-600 font-semibold' : 'text-slate-300'}">
+                                ${h > 0 ? h.toFixed(1) + 'h' : '-'}
+                            </td>
+                        `).join('')}
+                        <td class="px-6 py-4 text-right font-bold text-slate-900 bg-slate-50/50 stats-col-total">${dayTotal.toFixed(1)}h</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ====== Rendering ======
+        function renderRawTable(data) {
+            const tbody = document.getElementById('rawDataTable');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">無符合條件的資料</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map((c, index) => `
+                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="px-4 py-3 text-slate-400 text-xs cursor-help" title="${c.summary || '無摘要'}">${c._seq}</td>
+                    <td class="px-4 py-3 font-medium">${c.title}</td>
+                    <td class="px-4 py-3 text-xs">${c.project}</td>
+                    <td class="px-4 py-3 text-xs text-slate-600">${c.engineer || '-'}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-0.5 rounded-full text-xs ${getCategoryBadge(c.category)}">${c.category}</span>
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono">${c.hours}h</td>
+                    <td class="px-4 py-3 text-slate-500 text-xs">${new Date(c.modifiedTime).toLocaleDateString('zh-TW')}</td>
+                </tr>
+            `).join('');
+        }
+
+        function getCategoryBadge(category) {
+            const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+            const map = {
+                'DEBUG': isDark ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-red-50 text-red-700',
+                'UI 調整': isDark ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-purple-50 text-purple-700',
+                '架構變更': isDark ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-blue-50 text-blue-700',
+                '知識收集': isDark ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-green-50 text-green-700',
+                '資料處理': isDark ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-amber-50 text-amber-700',
+                '開發模式': isDark ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30' : 'bg-sky-50 text-sky-700'
+            };
+            return map[category] || (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700');
+        }
+
+        function renderDashboard(data) {
+            // Summary Cards
+            const totalHours = data.reduce((s, c) => s + c.hours, 0);
+            const projects = [...new Set(data.map(c => c.project))];
+            const categories = {};
+            data.forEach(c => {
+                if (!categories[c.category]) categories[c.category] = { count: 0, hours: 0 };
+                categories[c.category].count++;
+                categories[c.category].hours += c.hours;
+            });
+
+            document.getElementById('summaryCards').innerHTML = `
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">對話總數</p>
+                        <h3 class="text-2xl font-bold">${data.length}</h3>
+                    </div>
+                    <div class="bg-blue-50/50 p-3 rounded-full text-blue-600"><i class="fa-solid fa-comments text-xl"></i></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">總工時</p>
+                        <h3 class="text-2xl font-bold">${totalHours.toFixed(1)}h</h3>
+                    </div>
+                    <div class="bg-emerald-50/50 p-3 rounded-full text-emerald-600"><i class="fa-solid fa-clock text-xl"></i></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">涉及專案</p>
+                        <h3 class="text-2xl font-bold">${projects.length}</h3>
+                    </div>
+                    <div class="bg-indigo-50/50 p-3 rounded-full text-indigo-600"><i class="fa-solid fa-folder-tree text-xl"></i></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">類別數</p>
+                        <h3 class="text-2xl font-bold">${Object.keys(categories).length}</h3>
+                    </div>
+                    <div class="bg-amber-50/50 p-3 rounded-full text-amber-600"><i class="fa-solid fa-tags text-xl"></i></div>
+                </div>
+            `;
+
+            // Charts
+            if (hoursChartIns) hoursChartIns.destroy();
+            if (categoryChartIns) categoryChartIns.destroy();
+
+            const theme = document.documentElement.getAttribute('data-theme') || 'light';
+            const isDark = theme !== 'light';
+            const textColor = isDark ? '#cbd5e1' : '#475569';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+
+            // Bar Chart
+            const ctx1 = document.getElementById('hoursChart').getContext('2d');
+            hoursChartIns = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: data.map(c => c.title.substring(0, 12) + (c.title.length > 12 ? '...' : '')),
+                    datasets: [{
+                        label: '工時 (小時)',
+                        data: data.map(c => c.hours),
+                        backgroundColor: isDark ? 'rgba(96, 165, 250, 0.4)' : 'rgba(59, 130, 246, 0.6)',
+                        borderColor: isDark ? 'rgba(96, 165, 250, 0.8)' : 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor }
+                        }
+                    }
+                }
+            });
+
+            // Doughnut Chart
+            const ctx2 = document.getElementById('categoryChart').getContext('2d');
+            categoryChartIns = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categories),
+                    datasets: [{
+                        data: Object.values(categories).map(c => c.hours),
+                        backgroundColor: ['#ef4444', '#8b5cf6', '#3b82f6', '#22c55e', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: textColor,
+                                generateLabels: function (chart) {
+                                    const data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        const dataset = data.datasets[0];
+                                        const total = dataset.data.reduce((acc, val) => acc + val, 0);
+
+                                        return data.labels.map((label, i) => {
+                                            const value = dataset.data[i];
+                                            const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                            return {
+                                                text: `${percentage} ${label}`,
+                                                fillStyle: dataset.backgroundColor[i],
+                                                fontColor: textColor, // Explicitly set text color per item
+                                                hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                    return `${context.label}: ${value.toFixed(1)}h (${percentage})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Detail Table
+            document.getElementById('detailTableBody').innerHTML = data.map((c, index) => `
+                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="px-6 py-4 text-slate-400 text-xs">${c._seq}</td>
+                    <td class="px-6 py-4 font-medium">${c.title}</td>
+                    <td class="px-6 py-4 text-xs text-slate-500">${c.engineer || '-'}</td>
+                    <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs whitespace-nowrap ${getCategoryBadge(c.category)}">${c.category}</span></td>
+                    <td class="px-6 py-4"><span class="text-emerald-600">✓ 已完成</span></td>
+                    <td class="px-6 py-4 text-right font-mono">${c.hours}h</td>
+                    <td class="px-6 py-4 text-slate-500 text-xs">${c.summary || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ====== Report Generation ======
+        // ====== Report Generation ======
+        function generateReport() {
+            const format = document.getElementById('exportFormat').value;
+            let output = '';
+            const filteredData = getFilteredData();
+            const totalHours = filteredData.reduce((s, c) => s + c.hours, 0);
+
+            if (format === 'json') {
+                output = JSON.stringify({
+                    generatedAt: new Date().toISOString(),
+                    summary: {
+                        totalConversations: filteredData.length,
+                        totalHours: parseFloat(totalHours.toFixed(1))
+                    },
+                    conversations: filteredData
+                }, null, 2);
+            } else if (format === 'dashboard') {
+                output = '# 專案進度追蹤\n\n## 子項目進度\n\n';
+                output += '| 子項目 | 負責人 | 狀態 | 進度 | 實際工時 | 預估剩餘 | 問題 |\n';
+                output += '|--------|--------|------|------|----------|----------|------|\n';
+                filteredData.forEach(c => {
+                    const status = c.category === 'DEBUG' ? '🟡 卡關' : '✅ 完成';
+                    output += `| ${c.title} | AI 助理 | ${status} | 100% | ${c.hours}h | 0h | ${c.category === 'DEBUG' ? c.summary.substring(0, 20) : '無'} |\n`;
+                });
+            } else {
+                output = `# 專案互動歷史報告\n\n`;
+                output += `> **自動產生於**: ${new Date().toLocaleString('zh-TW')}\n`;
+
+                const projFilter = document.getElementById('filterProject').value;
+                const startStr = document.getElementById('filterStart').value;
+                const endStr = document.getElementById('filterEnd').value;
+                output += `> **篩選專案**: ${projFilter || '全部'}\n`;
+                output += `> **日期範圍**: ${startStr || '未設'} ~ ${endStr || '未設'}\n\n`;
+
+                output += `---\n\n## 📊 統計總覽\n\n`;
+                output += `| 指標 | 數值 |\n|------|------|\n`;
+                output += `| 對話總數 | ${filteredData.length} 個 |\n`;
+                output += `| 總工時 | ${totalHours.toFixed(1)} 小時 |\n\n`;
+
+                // Add Staff Stats Table if selected
+                if (document.getElementById('includeStaffStats').checked) {
+                    const engMap = {};
+                    filteredData.forEach(c => {
+                        const name = c.engineer || '未指定';
+                        if (!engMap[name]) engMap[name] = 0;
+                        engMap[name] += c.hours;
+                    });
+
+                    output += `## 👥 人員時數統計表\n\n`;
+                    output += `| 人員 | 總計工時 | 佔比 |\n|------|----------|------|\n`;
+                    Object.entries(engMap).sort((a, b) => b[1] - a[1]).forEach(([name, hours]) => {
+                        const pct = ((hours / (totalHours || 1)) * 100).toFixed(1) + '%';
+                        output += `| ${name} | ${hours.toFixed(1)}h | ${pct} |\n`;
+                    });
+                    output += `\n`;
+                }
+
+                // Add Daily Stats Table if selected
+                if (document.getElementById('includeDailyStats').checked) {
+                    const engineers = [...new Set(filteredData.filter(c => c.engineer).map(c => c.engineer))].sort();
+                    const dailyData = {};
+                    filteredData.forEach(c => {
+                        const date = new Date(c.modifiedTime).toLocaleDateString('zh-TW');
+                        const eng = c.engineer || '未指定';
+                        if (!dailyData[date]) dailyData[date] = {};
+                        if (!dailyData[date][eng]) dailyData[date][eng] = 0;
+                        dailyData[date][eng] += c.hours;
+                    });
+
+                    // Sort dates ascending as requested (from small to large)
+                    const dates = Object.keys(dailyData).sort((a, b) => new Date(a) - new Date(b));
+
+                    output += `## 📅 人員每日工時統計\n\n`;
+                    output += `| 日期 | ${engineers.join(' | ')} | 當日總計 |\n`;
+                    output += `|------|${engineers.map(() => '---|').join('')}---|\n`;
+
+                    dates.forEach(date => {
+                        const row = engineers.map(eng => (dailyData[date][eng] || 0).toFixed(1) + 'h');
+                        const dayTotal = engineers.reduce((s, eng) => s + (dailyData[date][eng] || 0), 0);
+                        output += `| ${date} | ${row.join(' | ')} | **${dayTotal.toFixed(1)}h** |\n`;
+                    });
+                    output += `\n`;
+                }
+
+                output += `---\n\n## 📋 詳細記錄\n\n`;
+                filteredData.forEach((c, i) => {
+                    output += `### ${i + 1}. ${c.title}\n`;
+                    output += `- **專案**: ${c.project}\n`;
+                    output += `- **類別**: ${c.category}\n`;
+                    output += `- **人員**: ${c.engineer || '-'}\n`;
+                    output += `- **工時**: ${c.hours} 小時\n`;
+                    output += `- **摘要**: ${c.summary || '無'}\n\n`;
+                });
+            }
+
+            document.getElementById('reportPreview').textContent = output;
+        }
+
+        function copyReport() {
+            navigator.clipboard.writeText(document.getElementById('reportPreview').textContent);
+            alert('✅ 已複製到剪貼簿！');
+        }
+
+        function downloadReport() {
+            const format = document.getElementById('exportFormat').value;
+            const content = document.getElementById('reportPreview').textContent;
+            const ext = format === 'json' ? '.json' : '.md';
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `project_interaction_history${ext}`;
+            a.click();
+        }
+
+        // ====== Project History Generation ======
+        const PROJECT_META = {
+            '福至心靈籤': {
+                type: 'React + TypeScript 網頁應用程式',
+                description: '數位求籤系統，整合 AI 解籤、本地儲存、雲端同步、PDF 生成等功能'
+            },
+            'AI專案管理': {
+                type: 'Markdown 文檔與 HTML 工具集',
+                description: 'Gemini 驅動開發方法論 (GDDM) 與中心程式開發方法 (CPDM) 的完整體系'
+            },
+            'Antigravity': {
+                type: 'AI 協作開發',
+                description: 'Antigravity 代理人自我迭代與系統維護'
+            }
+        };
+
+        function generateProjectHistory() {
+            const projectName = document.getElementById('historyProjectSelect').value;
+            if (!projectName) {
+                alert('請先選擇一個專案！');
+                return;
+            }
+
+            // Filter data for this project
+            const projectData = currentData.filter(c => c.project === projectName);
+            if (projectData.length === 0) {
+                alert(`找不到 "${projectName}" 的對話記錄，請先載入數據！`);
+                return;
+            }
+
+            // Sort by time
+            projectData.sort((a, b) => new Date(a.modifiedTime) - new Date(b.modifiedTime));
+
+            const meta = PROJECT_META[projectName] || { type: '未知', description: '' };
+            const totalHours = projectData.reduce((s, c) => s + c.hours, 0);
+            const firstDate = new Date(projectData[0].modifiedTime);
+            const lastDate = new Date(projectData[projectData.length - 1].modifiedTime);
+            const daySpan = Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)) + 1;
+
+            // Category stats
+            const categories = {};
+            projectData.forEach(c => {
+                if (!categories[c.category]) categories[c.category] = [];
+                categories[c.category].push(c);
+            });
+
+            // Build output
+            let out = '';
+            out += `# ${projectName}專案開發互動歷史清單\n\n`;
+            out += `## 專案概述\n`;
+            out += `**專案名稱**: ${projectName}  \n`;
+            out += `**專案類型**: ${meta.type}  \n`;
+            out += `**主要功能**: ${meta.description}\n\n`;
+            out += `---\n\n`;
+
+            out += `## 互動歷史統計\n\n`;
+            out += `### 總計\n`;
+            out += `- **對話數量**: ${projectData.length} 個主要對話\n`;
+            out += `- **開發時間跨度**: ${firstDate.toLocaleDateString('zh-TW')} 至 ${lastDate.toLocaleDateString('zh-TW')} (約 ${daySpan} 天)\n`;
+            out += `- **實際開發時間**: 約 ${totalHours.toFixed(1)} 小時\n\n`;
+            out += `---\n\n`;
+
+            out += `## 詳細互動記錄\n\n`;
+            const numEmoji = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+
+            projectData.forEach((c, i) => {
+                const emoji = numEmoji[i] || `${i + 1}.`;
+                const modTime = new Date(c.modifiedTime);
+
+                out += `### ${emoji} ${c.title}\n`;
+                out += `**對話 ID**: ${c.id}  \n`;
+                out += `**完成時間**: ${modTime.toLocaleString('zh-TW')}  \n`;
+                out += `**實際工作時間**: 約 ${c.hours} 小時\n\n`;
+
+                out += `#### 問題描述\n`;
+                out += `- ${c.summary}\n\n`;
+
+                out += `#### 解決方案\n\n`;
+                out += `**AI 提出的方案**:\n`;
+                out += `- ✅ 分析問題並提供解決方案\n`;
+                out += `- ✅ 實作程式碼或文檔\n`;
+                out += `- ✅ 驗證與測試\n\n`;
+
+                out += `**使用者提出的方案**:\n`;
+                out += `- ✅ 提供需求描述\n`;
+                out += `- ✅ 確認驗收標準\n\n`;
+
+                out += `#### 技術類別\n`;
+                const catEmoji = {
+                    'DEBUG': '🐛 **程式 DEBUG**',
+                    'UI 調整': '🎨 **UI 調整**',
+                    '架構變更': '🏗️ **架構變更**',
+                    '知識收集': '📚 **知識收集**',
+                    '資料處理': '💾 **資料處理**',
+                    '開發模式': '⚡ **開發模式**'
+                };
+                out += `- ${catEmoji[c.category] || c.category}: ${c.summary}\n\n`;
+                out += `---\n\n`;
+            });
+
+            // Statistics Summary
+            out += `## 統計分析\n\n`;
+            out += `### 按類別統計\n\n`;
+            for (const [cat, items] of Object.entries(categories)) {
+                const catEmoji = {
+                    'DEBUG': '🐛',
+                    'UI 調整': '🎨',
+                    '架構變更': '🏗️',
+                    '知識收集': '📚',
+                    '資料處理': '💾',
+                    '開發模式': '⚡'
+                };
+                const hours = items.reduce((s, c) => s + c.hours, 0);
+                out += `#### ${catEmoji[cat] || '📌'} ${cat} (${items.length} 項, ${hours.toFixed(1)} 小時)\n`;
+                items.forEach((c, j) => out += `${j + 1}. ${c.title}\n`);
+                out += `\n`;
+            }
+
+            out += `---\n\n`;
+            out += `## 結論\n\n`;
+            out += `本專案在約 **${daySpan} 天的開發時間**內，透過 **${projectData.length} 個主要對話**，完成了從需求到實現的完整開發。\n`;
+            out += `**總投入工時**: ${totalHours.toFixed(1)} 小時\n\n`;
+            out += `---\n\n`;
+            out += `*此報告由 CPDM 專案互動歷史產生器自動生成於 ${new Date().toLocaleString('zh-TW')}*\n`;
+
+            document.getElementById('historyPreview').textContent = out;
+        }
+
+        function copyProjectHistory() {
+            navigator.clipboard.writeText(document.getElementById('historyPreview').textContent);
+            alert('✅ 已複製到剪貼簿！');
+        }
+
+        function downloadProjectHistory() {
+            const projectName = document.getElementById('historyProjectSelect').value || 'project';
+            const content = document.getElementById('historyPreview').textContent;
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${projectName}_interaction_history.md`;
+            a.click();
+        }
+
+        // ====== Model Usage Countdown ======
+        let countdownSeconds = 0;
+        function updateUsageCountdown() {
+            if (countdownSeconds <= 0) return;
+            const h = Math.floor(countdownSeconds / 3600);
+            const m = Math.floor((countdownSeconds % 3600) / 60);
+            const s = countdownSeconds % 60;
+            const timerStr = [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+            const el = document.getElementById('usageCountdown');
+            if (el) el.textContent = timerStr;
+            countdownSeconds--;
+        }
+        setInterval(updateUsageCountdown, 1000);
+
+        function uploadUsageFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        renderUsage(data);
+                    } catch (err) {
+                        alert('JSON 格式錯誤');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function renderUsage(data) {
+            const container = document.getElementById('modelUsageList');
+            container.innerHTML = '';
+
+            if (data.usage && data.usage.length > 0) {
+                data.usage.forEach(item => {
+                    const div = document.createElement('div');
+                    const colorClass = item.model.includes('pro') ? 'from-amber-500 to-orange-400' : 'from-indigo-500 to-blue-400';
+                    div.innerHTML = `
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span class="font-semibold text-slate-700">${item.model}</span>
+                            <span class="text-slate-500">${item.used} / ${item.limit} <span class="text-slate-300 ml-1">| ${item.percent}%</span></span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                            <div class="bg-gradient-to-r ${colorClass} h-full rounded-full transition-all duration-1000" style="width: ${item.percent}%"></div>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+
+                if (data.resetCountdownMs) {
+                    countdownSeconds = Math.floor(data.resetCountdownMs / 1000);
+                }
+            } else {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">無今日使用紀錄</p>';
+            }
+        }
+
+        // 主題切換
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('dashboard-theme', theme);
+
+            // 全域圖表字體顏色更新
+            const isDark = theme !== 'light';
+            Chart.defaults.color = isDark ? '#cbd5e1' : '#475569';
+
+            // 更新按鈕樣式
+            ['light', 'slate', 'dark'].forEach(t => {
+                const btn = document.getElementById(`theme-btn-${t}`);
+                if (btn) {
+                    if (t === theme) {
+                        btn.classList.add('bg-white', 'shadow-sm', 'ring-1', 'ring-slate-200');
+                        btn.classList.remove('opacity-50');
+                    } else {
+                        btn.classList.remove('bg-white', 'shadow-sm', 'ring-1', 'ring-slate-200');
+                        btn.classList.add('opacity-50');
+                    }
+                }
+            });
+
+            // 重新渲染圖表以適應顏色 (如果已經載入數據)
+            if (currentData.length > 0) {
+                renderDashboard(getFilteredData());
+            }
+        }
+
+        // 初始化
+        function initDashboard() {
+            // 設定日期初始值
+            document.getElementById('filterStart').value = '2025-12-17';
+            document.getElementById('filterEnd').value = new Date().toISOString().split('T')[0];
+
+            // 恢復字體大小
+            const savedSize = localStorage.getItem('dashboard-font-size') || '16';
+            document.getElementById('fontSizeSlider').value = savedSize;
+            updateFontSize(savedSize);
+
+            // 恢復主題
+            const savedTheme = localStorage.getItem('dashboard-theme') || 'light';
+            setTheme(savedTheme);
+
+            const loadingOverlay = showLoading('初始化中...');
+            setTimeout(() => {
+                hideLoading(loadingOverlay);
+            }, 500);
+        }
+
+        // Initialize when page loads
+        initDashboard();
+    </script>
+</body>
+
+</html>

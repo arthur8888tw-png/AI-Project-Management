@@ -1,0 +1,494 @@
+{
+  "generatedAt": "2025-12-25T12:07:38.571Z",
+  "summary": {
+    "totalConversations": 24,
+    "totalHours": 60,
+    "projectCount": 3,
+    "categoryCount": 7
+  },
+  "projects": {
+    "福至心靈籤": {
+      "count": 16,
+      "hours": 31.4
+    },
+    "常春藤尾牙互動遊戲": {
+      "count": 3,
+      "hours": 6.300000000000001
+    },
+    "AI專案管理": {
+      "count": 5,
+      "hours": 22.299999999999997
+    }
+  },
+  "categories": {
+    "DEBUG": {
+      "count": 4,
+      "hours": 7.5
+    },
+    "架構變更": {
+      "count": 4,
+      "hours": 9.600000000000001
+    },
+    "其他": {
+      "count": 3,
+      "hours": 7.199999999999999
+    },
+    "知識收集": {
+      "count": 7,
+      "hours": 14.4
+    },
+    "資料處理": {
+      "count": 1,
+      "hours": 1.5
+    },
+    "UI 調整": {
+      "count": 2,
+      "hours": 5.5
+    },
+    "開發模式": {
+      "count": 3,
+      "hours": 14.299999999999999
+    }
+  },
+  "conversations": [
+    {
+      "id": "b3615b63-3c6f-48b1-b25a-86884f204649",
+      "title": "SQLite 穩定性與修復",
+      "project": "福至心靈籤",
+      "category": "DEBUG",
+      "activeHours": 3,
+      "hours": 3,
+      "summary": "Documented Database Repair feature.",
+      "modifiedTime": "2025-12-17T06:08:34.700Z",
+      "createdTime": "2025-12-17T03:34:51.674Z",
+      "sizeKb": 4805.2,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 54.1,
+      "thinkingGapMinutes": 0,
+      "researchHours": 0
+    },
+    {
+      "id": "a2f3745b-9c75-4b84-b201-d238ae25b16c",
+      "title": "本地 LM Studio 整合",
+      "project": "福至心靈籤",
+      "category": "架構變更",
+      "activeHours": 0.4,
+      "hours": 0.4,
+      "summary": "Walkthrough for verifying the Local AI integration",
+      "modifiedTime": "2025-12-17T08:09:28.857Z",
+      "createdTime": "2025-12-17T07:44:56.761Z",
+      "sizeKb": 914.3,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 15.1,
+      "thinkingGapMinutes": 96,
+      "researchHours": 1.6
+    },
+    {
+      "id": "12e24fad-1634-4a17-b41e-865257433f65",
+      "title": "Auto Open About Screen on First Login",
+      "project": "福至心靈籤",
+      "category": "其他",
+      "activeHours": 0.1,
+      "hours": 1.1,
+      "summary": "Plan to implement auto-navigation to About screen for first-time users.\n1. Modify `storageService.ts`: Update `saveUser` to return `isNewUser`.\n2. Modify `LoginScreen.tsx`: Pass `isNewUser` to `onLogin`.\n3. Modify `App.tsx`: Update `handleLogin` logic to redirect new users.",
+      "modifiedTime": "2025-12-17T13:13:21.301Z",
+      "createdTime": "2025-12-17T13:13:20.831Z",
+      "sizeKb": 1285.1,
+      "artifacts": [
+        "implementation_plan.md"
+      ],
+      "complexityScore": 14.9,
+      "thinkingGapMinutes": 304,
+      "researchHours": 1
+    },
+    {
+      "id": "cb1c0e2e-e316-4f43-a3e0-92c0a29a42f5",
+      "title": "尋找真實籤詩資料",
+      "project": "福至心靈籤",
+      "category": "知識收集",
+      "activeHours": 0.7,
+      "hours": 0.7,
+      "summary": "Continuing execution: scraping remaining authentic fortune data.",
+      "modifiedTime": "2025-12-17T16:08:24.588Z",
+      "createdTime": "2025-12-17T15:28:18.757Z",
+      "sizeKb": 18661.7,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md"
+      ],
+      "complexityScore": 190.6,
+      "thinkingGapMinutes": 135,
+      "researchHours": 12.7
+    },
+    {
+      "id": "89329067-656d-4c37-b766-174f78e61554",
+      "title": "填充籤詩資料",
+      "project": "福至心靈籤",
+      "category": "資料處理",
+      "activeHours": 1.5,
+      "hours": 1.5,
+      "summary": "Walkthrough update for dynamic lot range",
+      "modifiedTime": "2025-12-17T18:23:33.032Z",
+      "createdTime": "2025-12-17T16:51:02.449Z",
+      "sizeKb": 1722,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 23.2,
+      "thinkingGapMinutes": 43,
+      "researchHours": 0.7
+    },
+    {
+      "id": "da22efa1-38d5-4098-b059-de93b121db79",
+      "title": "PDF 籤詩換行修復",
+      "project": "福至心靈籤",
+      "category": "DEBUG",
+      "activeHours": 0.4,
+      "hours": 0.4,
+      "summary": "Walkthrough of the line break formatting fix.",
+      "modifiedTime": "2025-12-17T23:23:26.900Z",
+      "createdTime": "2025-12-17T18:49:30.511Z",
+      "sizeKb": 1308.4,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 19.1,
+      "thinkingGapMinutes": 26,
+      "researchHours": 0.4
+    },
+    {
+      "id": "771a2bfa-9c6d-4133-b9ee-725885ee45d6",
+      "title": "捲軸版面美學優化",
+      "project": "福至心靈籤",
+      "category": "UI 調整",
+      "activeHours": 2,
+      "hours": 2,
+      "summary": "這是一個詳細的優化回顧，記錄了針對 UI/UX 與 AI 解籤功能的全面升級。包含捲軸 3D 效果、按鈕鮮豔質感、AI 廟公對話深度以及抽籤時的手感震動優化。駕",
+      "modifiedTime": "2025-12-18T20:48:01.534Z",
+      "createdTime": "2025-12-17T23:23:26.900Z",
+      "sizeKb": 7997.9,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 86,
+      "thinkingGapMinutes": 0,
+      "researchHours": 0
+    },
+    {
+      "id": "bf5a9afd-c25c-4535-b425-70c900b37a74",
+      "title": "LM Studio JSON 解析修復",
+      "project": "福至心靈籤",
+      "category": "DEBUG",
+      "activeHours": 4,
+      "hours": 4,
+      "summary": "Final walkthrough of the natural scroll unrolling animation.",
+      "modifiedTime": "2025-12-19T08:11:30.073Z",
+      "createdTime": "2025-12-19T00:14:51.478Z",
+      "sizeKb": 17875.1,
+      "artifacts": [
+        "deployment_plan.md",
+        "implementation_plan.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 186.8,
+      "thinkingGapMinutes": 207,
+      "researchHours": 12.5
+    },
+    {
+      "id": "d1b790ad-8b63-43aa-b47e-34b7fb67efc3",
+      "title": "歷史記錄顯示增強",
+      "project": "福至心靈籤",
+      "category": "UI 調整",
+      "activeHours": 3.5,
+      "hours": 3.5,
+      "summary": "",
+      "modifiedTime": "2025-12-19T17:59:55.741Z",
+      "createdTime": "2025-12-19T08:48:22.435Z",
+      "sizeKb": 979.5,
+      "artifacts": [],
+      "complexityScore": 9.8,
+      "thinkingGapMinutes": 37,
+      "researchHours": 0.6
+    },
+    {
+      "id": "9eb84981-2b06-4168-856e-827d06ff1035",
+      "title": "Gemini API 金鑰除錯",
+      "project": "福至心靈籤",
+      "category": "DEBUG",
+      "activeHours": 0.1,
+      "hours": 0.1,
+      "summary": "",
+      "modifiedTime": "2025-12-19T18:07:28.956Z",
+      "createdTime": "2025-12-19T18:07:28.956Z",
+      "sizeKb": 3480.8,
+      "artifacts": [],
+      "complexityScore": 34.8,
+      "thinkingGapMinutes": 8,
+      "researchHours": 0.1
+    },
+    {
+      "id": "f62a0ee0-d82b-4475-a603-6a572354cd49",
+      "title": "Supabase Schema 修復",
+      "project": "福至心靈籤",
+      "category": "架構變更",
+      "activeHours": 6,
+      "hours": 6,
+      "summary": "",
+      "modifiedTime": "2025-12-20T20:07:32.690Z",
+      "createdTime": "2025-12-20T07:07:02.413Z",
+      "sizeKb": 6145,
+      "artifacts": [],
+      "complexityScore": 61.4,
+      "thinkingGapMinutes": 780,
+      "researchHours": 4.1
+    },
+    {
+      "id": "c3b6572d-88d2-4298-a4ae-6feb9823bcaf",
+      "title": "Analyzing Project History and Future",
+      "project": "福至心靈籤",
+      "category": "知識收集",
+      "activeHours": 4,
+      "hours": 4,
+      "summary": "詳細統計福至心靈籤專案從 2025-12-17 至 2025-12-21 的工作時間分布。總工作時間 23 小時 48 分鐘,其中正常工作時間 9 小時 6 分鐘 (38.2%),早班 3 小時 25 分鐘,晚班加班 7 小時 17 分鐘,週末加班 4 小時。加班比例高達 61.8%。包含每日詳細時間拆分、工作模式分析、成果對照,以及建議的理想工作時間分配。",
+      "modifiedTime": "2025-12-21T22:32:30.826Z",
+      "createdTime": "2025-12-21T20:27:30.309Z",
+      "sizeKb": 944.4,
+      "artifacts": [
+        "cross_platform_deployment_checklist.md",
+        "project_interaction_history.md",
+        "user_conversation_analysis.md",
+        "work_time_statistics.md"
+      ],
+      "complexityScore": 17.4,
+      "thinkingGapMinutes": 1460,
+      "researchHours": 1.2
+    },
+    {
+      "id": "8588a97a-d3b9-4a53-bed1-978fffd3955e",
+      "title": "UI 文件產生",
+      "project": "福至心靈籤",
+      "category": "知識收集",
+      "activeHours": 1.9,
+      "hours": 1.9,
+      "summary": "",
+      "modifiedTime": "2025-12-22T03:05:48.703Z",
+      "createdTime": "2025-12-22T03:05:48.703Z",
+      "sizeKb": 370.6,
+      "artifacts": [],
+      "complexityScore": 3.7,
+      "thinkingGapMinutes": 273,
+      "researchHours": 0.3
+    },
+    {
+      "id": "1cc0c527-fc2d-4260-b9d0-6e1e4360066b",
+      "title": "UI Documentation Generation (Detailed)",
+      "project": "福至心靈籤",
+      "category": "知識收集",
+      "activeHours": 1.4,
+      "hours": 1.4,
+      "summary": "Walkthrough of the created User Manual.",
+      "modifiedTime": "2025-12-22T04:43:52.457Z",
+      "createdTime": "2025-12-22T03:22:51.836Z",
+      "sizeKb": 487.8,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md",
+        "UI_Context.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 12.9,
+      "thinkingGapMinutes": 17,
+      "researchHours": 0.3
+    },
+    {
+      "id": "4411fd3b-3cc1-4d45-90e1-64a261dabf86",
+      "title": "系統分析、在地化與部署",
+      "project": "常春藤尾牙互動遊戲",
+      "category": "架構變更",
+      "activeHours": 2.2,
+      "hours": 2.2,
+      "summary": "完成系統繁體中文化。驗證所有主要服務與元件的文字改動。",
+      "modifiedTime": "2025-12-22T12:29:45.934Z",
+      "createdTime": "2025-12-22T10:43:19.881Z",
+      "sizeKb": 1470.6,
+      "artifacts": [
+        "DEPLOYMENT.md",
+        "GITHUB_UPLOAD.md",
+        "implementation_plan.md",
+        "SETUP.md",
+        "system_analysis.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 28.7,
+      "thinkingGapMinutes": 359,
+      "researchHours": 1.9
+    },
+    {
+      "id": "176a1e82-c390-404a-b0c4-092f525dd42f",
+      "title": "提交專案至 GitHub",
+      "project": "福至心靈籤",
+      "category": "架構變更",
+      "activeHours": 1,
+      "hours": 1,
+      "summary": "",
+      "modifiedTime": "2025-12-22T13:27:44.243Z",
+      "createdTime": "2025-12-22T13:27:44.243Z",
+      "sizeKb": 279.9,
+      "artifacts": [],
+      "complexityScore": 2.8,
+      "thinkingGapMinutes": 58,
+      "researchHours": 1
+    },
+    {
+      "id": "26e36f3a-92c1-4dcd-aef8-fae1a832dccc",
+      "title": "Locate Fortune Poem Data",
+      "project": "福至心靈籤",
+      "category": "知識收集",
+      "activeHours": 0.4,
+      "hours": 0.4,
+      "summary": "",
+      "modifiedTime": "2025-12-22T13:50:48.690Z",
+      "createdTime": "2025-12-22T13:50:48.690Z",
+      "sizeKb": 384,
+      "artifacts": [],
+      "complexityScore": 3.8,
+      "thinkingGapMinutes": 23,
+      "researchHours": 0.4
+    },
+    {
+      "id": "d2ffd144-6fc4-4d7d-b1d8-245a9f7f1095",
+      "title": "Engineer Collaboration Checklist",
+      "project": "AI專案管理",
+      "category": "知識收集",
+      "activeHours": 1,
+      "hours": 1,
+      "summary": "Task list for developing the engineer work verification program.",
+      "modifiedTime": "2025-12-22T23:12:59.769Z",
+      "createdTime": "2025-12-22T23:12:22.345Z",
+      "sizeKb": 285.1,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md"
+      ],
+      "complexityScore": 6.9,
+      "thinkingGapMinutes": 562,
+      "researchHours": 0.5
+    },
+    {
+      "id": "9b18c3e6-e79b-4628-996c-e12849421eeb",
+      "title": "Daily Hours & Data Integrity",
+      "project": "AI專案管理",
+      "category": "開發模式",
+      "activeHours": 3.1,
+      "hours": 3.1,
+      "summary": "Integrate a Person-Hours tab and implement SHA-256 integrity checksum.",
+      "modifiedTime": "2025-12-23T02:18:23.641Z",
+      "createdTime": "2025-12-23T02:18:23.641Z",
+      "sizeKb": 3782.9,
+      "artifacts": [],
+      "complexityScore": 37.8,
+      "thinkingGapMinutes": 185,
+      "researchHours": 2.5
+    },
+    {
+      "id": "7c6870ca-d1bd-4574-a1e5-952df7709e03",
+      "title": "Fix Model Usage Data",
+      "project": "AI專案管理",
+      "category": "知識收集",
+      "activeHours": 5,
+      "hours": 5,
+      "summary": "完成 Gemini 驅動開發方法論 (GDDM) 的完整設計,包含核心方法論、對話模板、知識庫系統、最佳實踐和快速開始指南。建立了完整的文檔結構和工作流程,為 AI 協作開發提供系統化的方法。",
+      "modifiedTime": "2025-12-24T03:15:27.943Z",
+      "createdTime": "2025-12-23T02:18:23.641Z",
+      "sizeKb": 6713.8,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 73.1,
+      "thinkingGapMinutes": 0,
+      "researchHours": 0
+    },
+    {
+      "id": "d2679a94-9409-4328-a1aa-0651d6f4ae1e",
+      "title": "Google Account Model Balance",
+      "project": "AI專案管理",
+      "category": "其他",
+      "activeHours": 3.5,
+      "hours": 3.5,
+      "summary": "",
+      "modifiedTime": "2025-12-24T08:38:54.213Z",
+      "createdTime": "2025-12-24T08:38:54.208Z",
+      "sizeKb": 683,
+      "artifacts": [],
+      "complexityScore": 6.8,
+      "thinkingGapMinutes": 323,
+      "researchHours": 0.5
+    },
+    {
+      "id": "c0118b5a-ded4-45c7-9392-3d601d8d6b1e",
+      "title": "Fix Mobile Table Count",
+      "project": "常春藤尾牙互動遊戲",
+      "category": "其他",
+      "activeHours": 0.3,
+      "hours": 2.6,
+      "summary": "",
+      "modifiedTime": "2025-12-24T22:48:59.022Z",
+      "createdTime": "2025-12-24T22:26:13.676Z",
+      "sizeKb": 3436,
+      "artifacts": [],
+      "complexityScore": 34.4,
+      "thinkingGapMinutes": 827,
+      "researchHours": 2.3
+    },
+    {
+      "id": "4c0b2de1-f775-42b5-8342-b2b7bbe7ff3e",
+      "title": "Optimize Game Display",
+      "project": "常春藤尾牙互動遊戲",
+      "category": "開發模式",
+      "activeHours": 0.1,
+      "hours": 1.5,
+      "summary": "",
+      "modifiedTime": "2025-12-25T00:17:43.228Z",
+      "createdTime": "2025-12-25T00:17:43.228Z",
+      "sizeKb": 1097,
+      "artifacts": [],
+      "complexityScore": 11,
+      "thinkingGapMinutes": 89,
+      "researchHours": 1.5
+    },
+    {
+      "id": "9caf95ae-a3c8-49ba-b4a9-3566bf990c80",
+      "title": "進行中的對話",
+      "project": "AI專案管理",
+      "category": "開發模式",
+      "activeHours": 8.4,
+      "hours": 9.7,
+      "summary": "CPDM 工時統計儀表板開發與維護",
+      "modifiedTime": "2025-12-25T12:07:06.337Z",
+      "createdTime": "2025-12-25T01:34:07.730Z",
+      "sizeKb": 13661.4,
+      "artifacts": [],
+      "complexityScore": 136.6,
+      "thinkingGapMinutes": 76,
+      "researchHours": 1.3
+    }
+  ]
+}
