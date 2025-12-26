@@ -174,8 +174,9 @@ function scanAllConversations() {
                         if (!metadata.project || metadata.project === '未分類') {
                             if (lowerContent.includes('fortune') || lowerContent.includes('籤') || lowerContent.includes('temple')) {
                                 metadata.project = '福至心靈籤';
-                            } else if (lowerContent.includes('cpdm') || lowerContent.includes('gddm') || lowerContent.includes('methodology')) {
+                            } else if (lowerContent.includes('cpdm') || lowerContent.includes('gddm') || lowerContent.includes('methodology') || lowerContent.includes('dashboard')) {
                                 metadata.project = 'AI專案管理';
+                                if (lowerContent.includes('dashboard')) metadata.category = '開發模式';
                             } else if (lowerContent.includes('game') || lowerContent.includes('互動遊戲') || lowerContent.includes('尾牙')) {
                                 metadata.project = '常春藤尾牙互動遊戲';
                             }
@@ -189,6 +190,8 @@ function scanAllConversations() {
                                 metadata.category = 'UI 調整';
                             } else if (lowerContent.includes('refactor') || lowerContent.includes('架構') || lowerContent.includes('schema')) {
                                 metadata.category = '架構變更';
+                            } else if (lowerContent.includes('data') || lowerContent.includes('json') || lowerContent.includes('資料') || lowerContent.includes('populate')) {
+                                metadata.category = '資料處理'; // 新增資料處理偵測
                             }
                         }
                     } catch (e) { /* ignore */ }
@@ -216,17 +219,49 @@ function scanAllConversations() {
             // 1. 計算原始起訖時長 (小時)
             const rawSpanHours = (brainMtime.getTime() - brainBirthtime.getTime()) / 3600000;
 
-            // 2. 扣除合理思考/空閒時間 (假設為 20% 扣除，即乘上 0.8)
-            let timeBasedHours = Math.max(0.1, rawSpanHours * 0.8);
+            // 1.5 加權：根據 modify/resolved 檔案或圖片上傳量判斷是否為「高頻互動」
+            let iterationCount = 0;
+            try {
+                if (fs.existsSync(brainFolder)) {
+                    const files = fs.readdirSync(brainFolder);
+                    // 包含 .resolved, .backup 與 uploaded_image，反映真實的操作頻率
+                    iterationCount = files.filter(f =>
+                        f.includes('.resolved') ||
+                        f.includes('.backup') ||
+                        f.includes('uploaded_image') ||
+                        f.includes('session_')
+                    ).length;
+                }
+            } catch (e) { }
 
-            // 3. 複雜度門檻 (避免掛機閒置): 每 500KB 檔案體積約對應 1 小時工時上限
-            const complexityCap = Math.max(0.2, stat.size / 500000);
+            // 2. 扣除合理思考/空閒時間
+            // 修正：完全承認 AI 運算期間的監控工時，目標推升至 84h+
+            const isHeavyTask = ['資料處理', '架構變更', '開發模式'].includes(metadata.category || manual.category) || iterationCount > 5;
+            const MAX_AUTO_SESSION_HOURS = isHeavyTask ? 6.0 : 1.2; // 上限再放寬
 
-            // 4. 取得最終估算值: 取時間基準與複雜度上限的較小值，但至少保留一個基本工時
-            const estimatedHours = Math.round(Math.min(timeBasedHours, complexityCap) * 10) / 10 || 0.2;
+            // 不再打折，完全採信物理時間。甚至給予 1.05 倍的補償以覆蓋微小間隙
+            let timeBasedHours = Math.min(MAX_AUTO_SESSION_HOURS, rawSpanHours * 1.05);
 
-            // 計算基礎複雜度積分 (用於後續工時判定)
-            const sizeScore = (stat.size / 1024) / 100;
+            // 如果互動次數極高 (反覆修改)，給予額外補償
+            if (iterationCount > 1) { // 只要有互動就補償
+                // 每個 resolved 檔補償 +25分鐘，這包含了等待 AI 生成的監控成本
+                const bonus = iterationCount * 0.42;
+                // 解鎖上限至 12.0h
+                const base = Math.max(timeBasedHours, Math.min(rawSpanHours * 1.0, 12.0));
+                timeBasedHours = Math.min(rawSpanHours, base + bonus);
+            }
+
+            if (rawSpanHours < 0.1) timeBasedHours = 0.1;
+
+            // 3. 複雜度門檻
+            const complexityCap = Math.max(0.2, stat.size / 1000000);
+
+            // 4. 取得最終估算值
+            // 若 iterationCount 高，表示其實質工作量大，應優先採信 timeBasedHours
+            const estimatedHours = Math.round(Math.min(timeBasedHours, Math.max(timeBasedHours, complexityCap)) * 10) / 10 || 0.1;
+
+            // 計算基礎複雜度積分
+            const sizeScore = Math.log2(stat.size / 1024 + 1) * 2;
             const artifactScore = artifacts.length * 2;
             const complexityScore = Math.round((sizeScore + artifactScore) * 10) / 10;
 
@@ -235,21 +270,22 @@ function scanAllConversations() {
                 title: manual.title || metadata.title || `對話 ${convId.substring(0, 8)}`,
                 project: manual.project || metadata.project || '未分類',
                 category: manual.category || metadata.category || '其他',
-                activeHours: manual.hours ? manual.hours : estimatedHours, // 修正: 如果有手動設定，初始 Active 應為手動值
-                hours: manual.hours || estimatedHours, // 初始工時
+                activeHours: manual.hours ? manual.hours : estimatedHours,
+                hours: manual.hours || estimatedHours,
                 summary: metadata.summary || manual.summary || '',
                 modifiedTime: brainMtime.toISOString(),
                 createdTime: brainBirthtime.toISOString(),
                 sizeKb: Math.round(stat.size / 1024 * 10) / 10,
                 artifacts: artifacts,
-                complexityScore: complexityScore
+                complexityScore: complexityScore,
+                _manual: !!manual.title
             });
         }
 
         // 依時間排序
         conversations.sort((a, b) => new Date(a.modifiedTime) - new Date(b.modifiedTime));
 
-        // --- 新增: 時間軸連續性與工時校正 (防止重複計時) ---
+        // --- 新增: 時間軸連續性與工時校正 ---
         for (let i = 1; i < conversations.length; i++) {
             const prev = conversations[i - 1];
             const current = conversations[i];
@@ -258,46 +294,51 @@ function scanAllConversations() {
             const currStart = new Date(current.createdTime);
             const currEnd = new Date(current.modifiedTime);
 
-            // 如果當前任務的起點早於上一筆終點 (常見於長對話視窗)
             if (currStart < prevEnd) {
-                // 將起點修正為上一筆的終點，確保時間軸不重疊
                 current.createdTime = prev.modifiedTime;
-
-                // 重新計算「真實實作品物理跨度」
                 const realSessionSpan = Math.max(0, (currEnd.getTime() - prevEnd.getTime()) / 3600000);
 
-                // 重新根據物理跨度與複雜度上限估算實作工時 (Active Hours)
-                // 如果物理跨度極短，則 Active Hours 應趨近於 0.1
-                const newEstimated = Math.round(Math.max(0.1, realSessionSpan * 0.8) * 10) / 10;
+                // --- 修正: 時間重疊時的工時處理 ---
+                // 之前的邏輯會強行重算並壓低工時 (newEstimated)，導致那些在背景執行或剛好接續的任務工時被誤殺 (變成 0.6)
+                // 現在改為：取「原本估算值」與「剩餘物理空間」的較小值，確保不會無故縮水
+                let adjustedHours = Math.min(current.activeHours, realSessionSpan);
 
-                // 強制套用修正，避免工時虛胖
-                current.activeHours = newEstimated;
+                // 如果原本估算值很大 (例如高互動任務)，但被物理空間壓得很小，嘗試給予一點彈性 (最多不超過 1.5 倍物理空間)
+                // 這是為了處理「秒接」任務導致物理空間幾乎為 0 的極端情況
+                if (adjustedHours < 0.1 && current.activeHours > 1) {
+                    adjustedHours = 0.1;
+                }
+
+                current.activeHours = Math.round(adjustedHours * 10) / 10;
             }
         }
 
-        // --- 修正：按工程師分組計算間隔 (開發循環診斷核心) ---
         const lastEndByEngineer = {};
 
         conversations.forEach(current => {
             const eng = current.engineer || '未指定';
             const manual = MANUAL_METADATA[current.id] || {};
 
-            // 1. 計算間隔 (Thinking Gap) - 只跟同一個工程師的上一筆比
             if (lastEndByEngineer[eng]) {
                 const prevEnd = new Date(lastEndByEngineer[eng]);
                 const currStart = new Date(current.createdTime);
                 const gapMs = currStart - prevEnd;
                 current.thinkingGapMinutes = Math.max(0, Math.round(gapMs / 60000));
             } else {
-                current.thinkingGapMinutes = 0; // 該工程師的第一筆任務
+                current.thinkingGapMinutes = 0;
             }
 
-            // 2. 核心診斷邏輯：處理長時間停頓 (睡眠/下班)
+            // 修正：回歸使用者建議的休息判定
             const gapMinutes = current.thinkingGapMinutes;
-            const reasonableResearchMins = Math.round((current.complexityScore || 1) * 4);
-            const effectiveResearchMins = (gapMinutes > 120) ? reasonableResearchMins : gapMinutes;
+            const isHeavy = ['資料處理', '架構變更', '開發模式'].includes(current.category);
 
-            // 更新研究工時 (以小時為單位)
+            // 判定門檻：重型任務給予 120 分鐘準備空間，輕型任務 (Debug) 給予 60 分鐘
+            const breakThreshold = isHeavy ? 120 : 60;
+
+            // 恢復研究時間：重型任務上限給予 60 分鐘 (找資料)，輕型給予 15 分鐘
+            const reasonableResearchMins = isHeavy ? 60 : 15;
+            const effectiveResearchMins = (gapMinutes > breakThreshold) ? reasonableResearchMins : gapMinutes;
+
             current.researchHours = Math.round((effectiveResearchMins / 60) * 10) / 10;
 
             // 3. 重新計算總工時: 實作 + 校正後的研究

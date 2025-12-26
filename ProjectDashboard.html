@@ -951,22 +951,25 @@
 
                     // --- Integrity Verification ---
                     if (jsonData.integrity) {
-                        const content = JSON.stringify(newData);
-                        const msgUint8 = new TextEncoder().encode(content);
-                        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-                        const hashArray = Array.from(new Uint8Array(hashBuffer));
-                        const calculatedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                        // 修正：檢查瀏覽器是否支援 crypto (file:// 模式下可能不支援)
+                        if (window.isSecureContext && window.crypto && window.crypto.subtle) {
+                            const content = JSON.stringify(newData);
+                            const msgUint8 = new TextEncoder().encode(content);
+                            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+                            const hashArray = Array.from(new Uint8Array(hashBuffer));
+                            const calculatedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-                        if (calculatedHash !== jsonData.integrity) {
-                            if (!confirm('⚠️ 警告：資料完整性檢查失敗！此檔案的內容可能已被手動修改過，與原始生成時不符。\n\n是否仍要強制匯入？')) {
-                                event.target.value = '';
-                                return;
+                            if (calculatedHash !== jsonData.integrity) {
+                                if (!confirm('⚠️ 警告：資料完整性檢查失敗！此檔案的內容可能已被手動修改過。\n\n是否仍要強制匯入？')) {
+                                    event.target.value = '';
+                                    return;
+                                }
+                            } else {
+                                console.log('✅ 資料完整性驗證通過');
                             }
                         } else {
-                            console.log('✅ 資料完整性驗證通過');
+                            console.warn('⚠️ 偵測到非安全環境 (file://)，自動跳過完整性簽章驗證。');
                         }
-                    } else {
-                        console.warn('⚠️ 此檔案不包含完整性簽章，無法驗證是否被修改過。');
                     }
 
                     // Attach engineer name to each record and preserve originals for translation
@@ -984,7 +987,7 @@
                     const uniqueData = Array.from(new Map(currentData.map(item => [item.id, item])).values());
 
                     // --- 重要：建立全域一致的序號系統 ---
-                    // 1. 依照時間正序排列 (確保歷史脈絡一致)
+                    // 1. 依照時間正序排列
                     uniqueData.sort((a, b) => new Date(a.modifiedTime) - new Date(b.modifiedTime));
 
                     // 2. 分配永久序號 _seq
@@ -1053,57 +1056,6 @@
                 hideLoading(loadingOverlay);
             }
         }
-
-        // 字體大小控制
-        function updateFontSize(size) {
-            document.documentElement.style.fontSize = size + 'px';
-            document.getElementById('fontSizeValue').textContent = size + 'px';
-            localStorage.setItem('dashboard-font-size', size);
-        }
-
-        // 主題切換
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('dashboard-theme', theme);
-
-            // 更新按鈕樣式
-            ['light', 'slate', 'dark'].forEach(t => {
-                const btn = document.getElementById(`theme-btn-${t}`);
-                if (btn) {
-                    if (t === theme) {
-                        btn.classList.add('bg-white', 'shadow-sm', 'ring-1', 'ring-slate-200');
-                        btn.classList.remove('opacity-50');
-                    } else {
-                        btn.classList.remove('bg-white', 'shadow-sm', 'ring-1', 'ring-slate-200');
-                        btn.classList.add('opacity-50');
-                    }
-                }
-            });
-
-            // 重新渲染圖表以適應顏色 (如果已經載入數據)
-            if (currentData.length > 0) {
-                renderDashboard(getFilteredData());
-            }
-        }
-
-        // 初始化
-        function initDashboard() {
-            // 恢復字體大小
-            const savedSize = localStorage.getItem('dashboard-font-size') || '16';
-            document.getElementById('fontSizeSlider').value = savedSize;
-            updateFontSize(savedSize);
-
-            // 恢復主題
-            const savedTheme = localStorage.getItem('dashboard-theme') || 'light';
-            setTheme(savedTheme);
-
-            const loadingOverlay = showLoading('初始化中...');
-            setTimeout(() => {
-                hideLoading(loadingOverlay);
-            }, 500);
-        }
-
-        initDashboard();
 
         function showLoading(msg) {
             const overlay = document.createElement('div');
@@ -1247,6 +1199,7 @@
                 const totalWorkMins = Math.round((c.hours || 0) * 60);
                 const efficiencyPct = Math.round((totalWorkMins / (reasonableTime || 1)) * 100);
 
+                let performance, statusClass, light;
                 if (totalWorkMins < (reasonableTime * 0.5)) {
                     performance = '卓越 (超效)';
                     statusClass = 'text-indigo-600 font-bold';
@@ -1289,10 +1242,12 @@
 
                 const formatHourMin = (isoStr) => {
                     const d = new Date(isoStr);
+                    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                    const day = d.getDate().toString().padStart(2, '0');
                     const h = d.getHours().toString().padStart(2, '0');
                     const m = d.getMinutes().toString().padStart(2, '0');
                     const s = d.getSeconds().toString().padStart(2, '0');
-                    return `${h}:${m}:${s}`;
+                    return `${month}/${day} ${h}:${m}:${s}`;
                 };
 
                 // 計算「循環耗時」(Cycle Time): 從上一筆結束到本筆結束的原始物理時間
@@ -1329,7 +1284,9 @@
                             </span>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="font-medium text-slate-800 text-base mb-1">${c.title}</div>
+                            <div class="font-medium text-slate-800 text-base mb-1">
+                                ${c.title} ${c._manual ? '<span class="text-indigo-500 text-[10px] ml-1 opacity-70" title="自定義勘誤標題">📝</span>' : ''}
+                            </div>
                             <div class="text-xs text-slate-500 flex items-center gap-1">
                                 <i class="fa-regular fa-clock opacity-60"></i>${timeRange}
                             </div>
@@ -1413,7 +1370,9 @@
             tbody.innerHTML = data.map((c, index) => `
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
                     <td class="px-4 py-3 text-slate-400 text-xs cursor-help" title="${c.summary || '無摘要'}">${c._seq}</td>
-                    <td class="px-4 py-3 font-medium">${c.title}</td>
+                    <td class="px-4 py-3 font-medium">
+                        ${c.title} ${c._manual ? '<span class="text-indigo-500 text-[10px] ml-1 opacity-70" title="自定義勘誤標題">📝</span>' : ''}
+                    </td>
                     <td class="px-4 py-3 text-xs">${c.project}</td>
                     <td class="px-4 py-3 text-xs text-slate-600">${c.engineer || '-'}</td>
                     <td class="px-4 py-3">
@@ -1914,6 +1873,13 @@
             }
         }
 
+        // 字體大小控制
+        function updateFontSize(size) {
+            document.documentElement.style.fontSize = size + 'px';
+            document.getElementById('fontSizeValue').textContent = size + 'px';
+            localStorage.setItem('dashboard-font-size', size);
+        }
+
         // 主題切換
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
@@ -1947,7 +1913,9 @@
         function initDashboard() {
             // 設定日期初始值
             document.getElementById('filterStart').value = '2025-12-17';
-            document.getElementById('filterEnd').value = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            document.getElementById('filterEnd').value = localDate;
 
             // 恢復字體大小
             const savedSize = localStorage.getItem('dashboard-font-size') || '16';
