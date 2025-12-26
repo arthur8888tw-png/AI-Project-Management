@@ -429,6 +429,45 @@ function estimateHoursFromSize(sizeBytes) {
 }
 
 /**
+ * 跨日工時拆分演算法
+ */
+function calculateDailySplits(conversations) {
+    const dailyData = {};
+    conversations.forEach(c => {
+        const eng = c.engineer || '未指定';
+        const startTime = new Date(c.createdTime);
+        const endTime = new Date(c.modifiedTime);
+        const totalHours = c.hours || 0;
+
+        if (endTime <= startTime || isNaN(startTime.getTime()) || (endTime - startTime) < 1000) {
+            const date = endTime.toLocaleDateString('zh-TW');
+            if (!dailyData[date]) dailyData[date] = {};
+            if (!dailyData[date][eng]) dailyData[date][eng] = 0;
+            dailyData[date][eng] += totalHours;
+            return;
+        }
+
+        let tempStart = new Date(startTime);
+        const totalSpanMs = endTime - startTime;
+
+        while (tempStart < endTime) {
+            const nextDay = new Date(tempStart);
+            nextDay.setHours(24, 0, 0, 0);
+            const endOfSegment = nextDay < endTime ? nextDay : endTime;
+            const segmentRatio = (endOfSegment - tempStart) / totalSpanMs;
+            const segmentHours = totalHours * segmentRatio;
+
+            const dateStr = tempStart.toLocaleDateString('zh-TW');
+            if (!dailyData[dateStr]) dailyData[dateStr] = {};
+            if (!dailyData[dateStr][eng]) dailyData[dateStr][eng] = 0;
+            dailyData[dateStr][eng] += segmentHours;
+            tempStart = nextDay;
+        }
+    });
+    return dailyData;
+}
+
+/**
  * 產生報告
  */
 function generateReport(projectFilter = null, startDate = null, endDate = null) {
@@ -509,6 +548,40 @@ function generateReport(projectFilter = null, startDate = null, endDate = null) 
         const emoji = categoryEmoji[cat] || '📌';
         lines.push(`- ${emoji} **${cat}**: ${convs.length} 項, ${hours.toFixed(1)} 小時`);
     }
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+
+    // 人員時數統計
+    const engineers = [...new Set(conversations.map(c => c.engineer || '未指定'))].sort();
+
+    lines.push('## 👥 人員時數統計');
+    lines.push('');
+    lines.push('| 人員 | 總計工時 | 佔比 |');
+    lines.push('|------|----------|------|');
+
+    engineers.forEach(eng => {
+        const hours = conversations.filter(c => (c.engineer || '未指定') === eng).reduce((s, c) => s + c.hours, 0);
+        const pct = ((hours / (totalHours || 1)) * 100).toFixed(1) + '%';
+        lines.push(`| ${eng} | ${hours.toFixed(1)}h | ${pct} |`);
+    });
+    lines.push('');
+
+    // 每日工時拆分
+    const dailyData = calculateDailySplits(conversations);
+    const dates = Object.keys(dailyData).sort((a, b) => new Date(a) - new Date(b));
+
+    lines.push('### 📅 每日工時拆分統計');
+    lines.push('');
+    lines.push(`| 日期 | ${engineers.join(' | ')} | 當日總計 |`);
+    lines.push(`|------|${engineers.map(() => '---|').join('')}---|`);
+
+    dates.forEach(date => {
+        const row = engineers.map(eng => (dailyData[date][eng] || 0).toFixed(1) + 'h');
+        const dayTotal = engineers.reduce((s, eng) => s + (dailyData[date][eng] || 0), 0);
+        lines.push(`| ${date} | ${row.join(' | ')} | **${dayTotal.toFixed(1)}h** |`);
+    });
+    lines.push('');
     lines.push('');
     lines.push('---');
     lines.push('');

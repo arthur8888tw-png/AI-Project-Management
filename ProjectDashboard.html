@@ -1072,6 +1072,48 @@
             }
         }
 
+        // ====== 工具函式: 跨日工時拆分演算法 ======
+        function calculateDailySplits(data, engineers) {
+            const dailyData = {};
+            data.forEach(c => {
+                const eng = c.engineer || '未指定';
+                const startTime = new Date(c.createdTime);
+                const endTime = new Date(c.modifiedTime);
+                const totalHours = c.hours || 0;
+
+                // 如果起始時間相同或無效，或是物理時長極短，則全部歸入結束日期
+                if (endTime <= startTime || isNaN(startTime.getTime()) || (endTime - startTime) < 1000) {
+                    const date = endTime.toLocaleDateString('zh-TW');
+                    if (!dailyData[date]) dailyData[date] = {};
+                    if (!dailyData[date][eng]) dailyData[date][eng] = 0;
+                    dailyData[date][eng] += totalHours;
+                    return;
+                }
+
+                let tempStart = new Date(startTime);
+                const totalSpanMs = endTime - startTime;
+
+                while (tempStart < endTime) {
+                    const nextDay = new Date(tempStart);
+                    nextDay.setHours(24, 0, 0, 0); // 跳到隔天 00:00:00
+
+                    const endOfSegment = nextDay < endTime ? nextDay : endTime;
+                    const segmentMs = endOfSegment - tempStart;
+                    const segmentRatio = segmentMs / totalSpanMs;
+                    // 根據物理時間佔佔比分配總工時 (含研究加成)
+                    const segmentHours = totalHours * segmentRatio;
+
+                    const dateStr = tempStart.toLocaleDateString('zh-TW');
+                    if (!dailyData[dateStr]) dailyData[dateStr] = {};
+                    if (!dailyData[dateStr][eng]) dailyData[dateStr][eng] = 0;
+                    dailyData[dateStr][eng] += segmentHours;
+
+                    tempStart = nextDay;
+                }
+            });
+            return dailyData;
+        }
+
         function showLoading(msg) {
             const overlay = document.createElement('div');
             overlay.className = 'fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center';
@@ -1328,44 +1370,7 @@
 
         function renderStaffDailyStats(data) {
             const engineers = [...new Set(data.filter(c => c.engineer).map(c => c.engineer))].sort();
-            const dailyData = {};
-
-            data.forEach(c => {
-                const eng = c.engineer || '未指定';
-                const startTime = new Date(c.createdTime);
-                const endTime = new Date(c.modifiedTime);
-                const totalHours = c.hours || 0;
-
-                // 如果起始時間相同或無效，退回到舊邏輯
-                if (endTime <= startTime || isNaN(startTime.getTime())) {
-                    const date = endTime.toLocaleDateString('zh-TW');
-                    if (!dailyData[date]) dailyData[date] = {};
-                    if (!dailyData[date][eng]) dailyData[date][eng] = 0;
-                    dailyData[date][eng] += totalHours;
-                    return;
-                }
-
-                // 計算跨越的天數
-                let tempStart = new Date(startTime);
-                const totalSpanMs = endTime - startTime;
-
-                while (tempStart < endTime) {
-                    const nextDay = new Date(tempStart);
-                    nextDay.setHours(24, 0, 0, 0); // 設定為當天午夜 (隔天 00:00)
-
-                    const endOfSegment = nextDay < endTime ? nextDay : endTime;
-                    const segmentMs = endOfSegment - tempStart;
-                    const segmentRatio = segmentMs / totalSpanMs;
-                    const segmentHours = totalHours * segmentRatio;
-
-                    const dateStr = tempStart.toLocaleDateString('zh-TW');
-                    if (!dailyData[dateStr]) dailyData[dateStr] = {};
-                    if (!dailyData[dateStr][eng]) dailyData[dateStr][eng] = 0;
-                    dailyData[dateStr][eng] += segmentHours;
-
-                    tempStart = nextDay;
-                }
-            });
+            const dailyData = calculateDailySplits(data, engineers);
 
             const dates = Object.keys(dailyData).sort((a, b) => new Date(b) - new Date(a));
             const header = document.getElementById('statsTableHeader');
@@ -1714,39 +1719,7 @@
                 // Add Daily Stats Table if selected
                 if (document.getElementById('includeDailyStats').checked) {
                     const engineers = [...new Set(filteredData.filter(c => c.engineer).map(c => c.engineer))].sort();
-                    const dailyData = {};
-                    // 實作與 UI 一致的跨日拆分演算法
-                    filteredData.forEach(c => {
-                        const eng = c.engineer || '未指定';
-                        const startTime = new Date(c.createdTime);
-                        const endTime = new Date(c.modifiedTime);
-                        const totalHours = c.hours || 0;
-
-                        if (endTime <= startTime || isNaN(startTime.getTime())) {
-                            const date = endTime.toLocaleDateString('zh-TW');
-                            if (!dailyData[date]) dailyData[date] = {};
-                            if (!dailyData[date][eng]) dailyData[date][eng] = 0;
-                            dailyData[date][eng] += totalHours;
-                            return;
-                        }
-
-                        let tempStart = new Date(startTime);
-                        const totalSpanMs = endTime - startTime;
-
-                        while (tempStart < endTime) {
-                            const nextDay = new Date(tempStart);
-                            nextDay.setHours(24, 0, 0, 0);
-                            const endOfSegment = nextDay < endTime ? nextDay : endTime;
-                            const segmentRatio = (endOfSegment - tempStart) / totalSpanMs;
-                            const segmentHours = totalHours * segmentRatio;
-
-                            const dateStr = tempStart.toLocaleDateString('zh-TW');
-                            if (!dailyData[dateStr]) dailyData[dateStr] = {};
-                            if (!dailyData[dateStr][eng]) dailyData[dateStr][eng] = 0;
-                            dailyData[dateStr][eng] += segmentHours;
-                            tempStart = nextDay;
-                        }
-                    });
+                    const dailyData = calculateDailySplits(filteredData, engineers);
 
                     // Sort dates ascending as requested (from small to large)
                     const dates = Object.keys(dailyData).sort((a, b) => new Date(a) - new Date(b));
