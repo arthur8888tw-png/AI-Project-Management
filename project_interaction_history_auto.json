@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2025-12-25T21:42:41.382Z",
+  "generatedAt": "2025-12-26T06:15:44.829Z",
   "summary": {
-    "totalConversations": 24,
-    "totalHours": 101.6,
+    "totalConversations": 25,
+    "totalHours": 102,
     "projectCount": 3,
     "categoryCount": 7
   },
@@ -12,8 +12,8 @@
       "hours": 55.3
     },
     "AI專案管理": {
-      "count": 4,
-      "hours": 42.2
+      "count": 5,
+      "hours": 42.6
     },
     "常春藤尾牙互動遊戲": {
       "count": 2,
@@ -46,14 +46,14 @@
       "hours": 1
     },
     "開發模式": {
-      "count": 2,
-      "hours": 39.1
+      "count": 3,
+      "hours": 39.5
     }
   },
   "conversations": [
     {
       "id": "b3615b63-3c6f-48b1-b25a-86884f204649",
-      "title": "Add New Deities: Wenchang Dijun & Yuexia Laoren",
+      "title": "增加文昌、月老籤詩",
       "project": "福至心靈籤",
       "category": "DEBUG",
       "activeHours": 2.6,
@@ -68,16 +68,16 @@
         "walkthrough.md"
       ],
       "complexityScore": 30.5,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 0,
       "researchHours": 0
     },
     {
       "id": "a2f3745b-9c75-4b84-b201-d238ae25b16c",
-      "title": "Switch to Local LM Studio API for Fortune Interpretation",
+      "title": "切換本地 LM Studio API 解籤",
       "project": "福至心靈籤",
       "category": "UI 調整",
-      "activeHours": 0.4,
+      "activeHours": 0.7,
       "hours": 0.7,
       "summary": "Walkthrough for verifying the Local AI integration",
       "modifiedTime": "2025-12-17T08:09:28.857Z",
@@ -89,16 +89,16 @@
         "walkthrough.md"
       ],
       "complexityScore": 25.7,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 96,
       "researchHours": 0.3
     },
     {
       "id": "12e24fad-1634-4a17-b41e-865257433f65",
-      "title": "Auto Open About Screen on First Login",
+      "title": "多元認證登錄功能",
       "project": "福至心靈籤",
       "category": "資料處理",
-      "activeHours": 0.1,
+      "activeHours": 1.1,
       "hours": 1.1,
       "summary": "Plan to implement auto-navigation to About screen for first-time users.\n1. Modify `storageService.ts`: Update `saveUser` to return `isNewUser`.\n2. Modify `LoginScreen.tsx`: Pass `isNewUser` to `onLogin`.\n3. Modify `App.tsx`: Update `handleLogin` logic to redirect new users.",
       "modifiedTime": "2025-12-17T13:13:21.301Z",
@@ -108,16 +108,16 @@
         "implementation_plan.md"
       ],
       "complexityScore": 22.7,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 304,
       "researchHours": 1
     },
     {
       "id": "cb1c0e2e-e316-4f43-a3e0-92c0a29a42f5",
-      "title": "Ensure Authentic Fortune Poems",
+      "title": "收集真實籤詩來源",
       "project": "福至心靈籤",
       "category": "UI 調整",
-      "activeHours": 0.7,
+      "activeHours": 1,
       "hours": 1,
       "summary": "Continuing execution: scraping remaining authentic fortune data.",
       "modifiedTime": "2025-12-17T16:08:24.588Z",
@@ -128,16 +128,16 @@
         "task.md"
       ],
       "complexityScore": 32.4,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 135,
       "researchHours": 0.3
     },
     {
       "id": "89329067-656d-4c37-b766-174f78e61554",
-      "title": "Dynamic Lot Number Range",
+      "title": "依籤數調整隨機數上限",
       "project": "福至心靈籤",
       "category": "DEBUG",
-      "activeHours": 1.5,
+      "activeHours": 2.2,
       "hours": 2.2,
       "summary": "Walkthrough update for dynamic lot range",
       "modifiedTime": "2025-12-17T18:23:33.032Z",
@@ -149,16 +149,16 @@
         "walkthrough.md"
       ],
       "complexityScore": 27.5,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 43,
       "researchHours": 0.7
     },
     {
       "id": "da22efa1-38d5-4098-b059-de93b121db79",
-      "title": "Formatting Fortune Poems Implementation Plan",
+      "title": "神明別UI呈現動態",
       "project": "福至心靈籤",
       "category": "UI 調整",
-      "activeHours": 4.6,
+      "activeHours": 5,
       "hours": 5,
       "summary": "Walkthrough of the line break formatting fix.",
       "modifiedTime": "2025-12-17T23:23:26.900Z",
@@ -170,7 +170,7 @@
         "walkthrough.md"
       ],
       "complexityScore": 26.7,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 26,
       "researchHours": 0.4
     },
@@ -191,16 +191,16 @@
         "walkthrough.md"
       ],
       "complexityScore": 31.9,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 0,
       "researchHours": 0
     },
     {
       "id": "bf5a9afd-c25c-4535-b425-70c900b37a74",
-      "title": "Scroll Opening Animation",
+      "title": "卷軸展開動態展示",
       "project": "福至心靈籤",
       "category": "UI 調整",
-      "activeHours": 7.9,
+      "activeHours": 8.2,
       "hours": 8.2,
       "summary": "Final walkthrough of the natural scroll unrolling animation.",
       "modifiedTime": "2025-12-19T08:11:30.073Z",
@@ -213,13 +213,13 @@
         "walkthrough.md"
       ],
       "complexityScore": 36.3,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 207,
       "researchHours": 0.3
     },
     {
       "id": "d1b790ad-8b63-43aa-b47e-34b7fb67efc3",
-      "title": "History Display Enhancements",
+      "title": "強化紀錄呈現與功能",
       "project": "福至心靈籤",
       "category": "UI 調整",
       "activeHours": 2.6,
@@ -270,10 +270,10 @@
     },
     {
       "id": "c3b6572d-88d2-4298-a4ae-6feb9823bcaf",
-      "title": "福至心靈籤跨平台部署調整清單",
+      "title": "跨平台部署技術作業清單",
       "project": "福至心靈籤",
       "category": "DEBUG",
-      "activeHours": 2.1,
+      "activeHours": 2.4,
       "hours": 2.4,
       "summary": "詳細統計福至心靈籤專案從 2025-12-17 至 2025-12-21 的工作時間分布。總工作時間 23 小時 48 分鐘,其中正常工作時間 9 小時 6 分鐘 (38.2%),早班 3 小時 25 分鐘,晚班加班 7 小時 17 分鐘,週末加班 4 小時。加班比例高達 61.8%。包含每日詳細時間拆分、工作模式分析、成果對照,以及建議的理想工作時間分配。",
       "modifiedTime": "2025-12-21T22:32:30.826Z",
@@ -286,13 +286,13 @@
         "work_time_statistics.md"
       ],
       "complexityScore": 27.8,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 1460,
       "researchHours": 0.3
     },
     {
       "id": "8588a97a-d3b9-4a53-bed1-978fffd3955e",
-      "title": "UI Documentation Generation",
+      "title": "UI 說明文件生成",
       "project": "福至心靈籤",
       "category": "知識收集",
       "activeHours": 0.4,
@@ -309,10 +309,10 @@
     },
     {
       "id": "1cc0c527-fc2d-4260-b9d0-6e1e4360066b",
-      "title": "User Manual Creation Plan",
+      "title": "使用說明及版權頁",
       "project": "福至心靈籤",
       "category": "UI 調整",
-      "activeHours": 1.4,
+      "activeHours": 1.6,
       "hours": 1.6,
       "summary": "Walkthrough of the created User Manual.",
       "modifiedTime": "2025-12-22T04:43:52.457Z",
@@ -325,16 +325,16 @@
         "walkthrough.md"
       ],
       "complexityScore": 25.9,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 17,
       "researchHours": 0.3
     },
     {
       "id": "4411fd3b-3cc1-4d45-90e1-64a261dabf86",
-      "title": "[繁體中文化] 系統全面中文化計畫",
+      "title": "系統全面中文化計畫",
       "project": "福至心靈籤",
       "category": "UI 調整",
-      "activeHours": 1.8,
+      "activeHours": 2.1,
       "hours": 2.1,
       "summary": "完成系統繁體中文化。驗證所有主要服務與元件的文字改動。",
       "modifiedTime": "2025-12-22T12:29:45.934Z",
@@ -350,7 +350,7 @@
         "walkthrough.md"
       ],
       "complexityScore": 35,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 359,
       "researchHours": 0.3
     },
@@ -373,7 +373,7 @@
     },
     {
       "id": "26e36f3a-92c1-4dcd-aef8-fae1a832dccc",
-      "title": "Locate Fortune Poem Data",
+      "title": "本地籤詩收集校正",
       "project": "福至心靈籤",
       "category": "知識收集",
       "activeHours": 0.4,
@@ -390,10 +390,10 @@
     },
     {
       "id": "d2ffd144-6fc4-4d7d-b1d8-245a9f7f1095",
-      "title": "Engineer Work Verification Program Implementation Plan",
+      "title": "跨平台程式校調",
       "project": "福至心靈籤",
       "category": "UI 調整",
-      "activeHours": 0.1,
+      "activeHours": 0.4,
       "hours": 0.4,
       "summary": "Task list for developing the engineer work verification program.",
       "modifiedTime": "2025-12-22T23:12:59.769Z",
@@ -404,13 +404,13 @@
         "task.md"
       ],
       "complexityScore": 20.3,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 562,
       "researchHours": 0.3
     },
     {
       "id": "9b18c3e6-e79b-4628-996c-e12849421eeb",
-      "title": "Daily Hours & Data Integrity",
+      "title": "每日工時及數據整合",
       "project": "AI專案管理",
       "category": "資料處理",
       "activeHours": 2.5,
@@ -427,7 +427,7 @@
     },
     {
       "id": "7c6870ca-d1bd-4574-a1e5-952df7709e03",
-      "title": "工時統計儀表板實作計畫 (Project Dashboard Implementation Plan)",
+      "title": "工時統計儀表板實作",
       "project": "AI專案管理",
       "category": "開發模式",
       "activeHours": 20,
@@ -442,7 +442,7 @@
         "walkthrough.md"
       ],
       "complexityScore": 31.4,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 0,
       "researchHours": 0
     },
@@ -465,7 +465,7 @@
     },
     {
       "id": "c0118b5a-ded4-45c7-9392-3d601d8d6b1e",
-      "title": "Fix Mobile Table Count",
+      "title": "可調桌數及遊戲時間",
       "project": "常春藤尾牙互動遊戲",
       "category": "DEBUG",
       "activeHours": 2.6,
@@ -499,20 +499,41 @@
     },
     {
       "id": "9caf95ae-a3c8-49ba-b4a9-3566bf990c80",
-      "title": "進行中的對話",
+      "title": "儀表板跨日工時邏輯優化",
       "project": "AI專案管理",
       "category": "開發模式",
-      "activeHours": 18.8,
+      "activeHours": 19.1,
       "hours": 19.1,
-      "summary": "CPDM 工時統計儀表板開發與維護",
+      "summary": "",
       "modifiedTime": "2025-12-25T20:23:51.492Z",
       "createdTime": "2025-12-25T01:34:07.730Z",
       "sizeKb": 26203,
       "artifacts": [],
       "complexityScore": 29.4,
-      "_manual": false,
+      "_manual": true,
       "thinkingGapMinutes": 76,
-      "researchHours": 0.3
+      "researchHours": 1.3
+    },
+    {
+      "id": "8ba54ee3-5ec9-42f0-b39e-8165788b74dd",
+      "title": "進行中的對話",
+      "project": "AI專案管理",
+      "category": "開發模式",
+      "activeHours": 0.4,
+      "hours": 0.4,
+      "summary": "Summary of dashboard refinements, UI/UX documentation, and learning plans.",
+      "modifiedTime": "2025-12-26T04:31:01.038Z",
+      "createdTime": "2025-12-26T02:07:30.610Z",
+      "sizeKb": 6838.2,
+      "artifacts": [
+        "implementation_plan.md",
+        "task.md",
+        "walkthrough.md"
+      ],
+      "complexityScore": 31.5,
+      "_manual": true,
+      "thinkingGapMinutes": 344,
+      "researchHours": 1
     }
   ]
 }

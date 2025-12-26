@@ -1,0 +1,15 @@
+我使用Antigravity來管理所有工程師的效能與工時(從Antigravity使用紀錄產生)
+
+
+我使用Antigravity的過程中，想要知道每個專案和包含的開發任務各花了我多少時間？在與AI互動中那些項目運作的效能不佳，那些時候表現卓越。當我是專案經理時，如何管理工程師的進度、工時、評估其效能與技術弱項？這些在我的Github項目中分享。
+
+github.com
+
+GitHub - arthur8888tw-png/AI-Project-Management
+Contribute to arthur8888tw-png/AI-Project-Management development by creating an account on GitHub.
+
+使用這個(ProjectDashboard.html)就能幫助你做好其他Vibe coding做不到的開發管理，目前我只在Antigravity上能實現這個功能。它不只是Vibe coding工具，對我來說就是Programmer、架構師、UI/UX設計師、前後端工程師的組合體。雖然我用繁體中文開發的程式，但使用內置的資料翻譯與web翻譯，你可以完全在英語環境運作。
+
+During my use of Antigravity, I want to know how much time each project and the included development tasks have taken me. I also want to know which interactions with AI have poor performance and at which times they perform excellently. As a project manager, I need to manage progress and the working hours of engineers, as well as evaluate their performance and technical weaknesses. These will be shared in my Github projects.
+https://github.com/arthur8888tw-png/AI-Project-Management
+Using this (ProjectDashboard.html) can help you manage development tasks that other Vibe coding tools can’t. Currently, I can only implement this function on Antigravity. It’s not just a Vibe coding tool; to me, it’s a combination of a programmer, architect, UI/UX designer, and front-end and back-end engineers. Although I developed the program in Traditional Chinese, with the built-in data translation and web translation, you can operate entirely in an English environment.

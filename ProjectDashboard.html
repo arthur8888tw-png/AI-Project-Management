@@ -367,27 +367,27 @@
             <div class="max-w-7xl mx-auto px-6">
                 <div class="flex gap-6 overflow-x-auto no-scrollbar">
                     <button id="tabData" onclick="switchTab('data')"
-                        class="py-4 text-sm font-medium tab-active whitespace-nowrap">
+                        class="py-4 text-base font-bold tab-active whitespace-nowrap">
                         <i class="fa-solid fa-database mr-2"></i>數據來源
                     </button>
                     <button id="tabDashboard" onclick="switchTab('dashboard')"
-                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        class="py-4 text-base font-bold text-slate-500 hover:text-slate-700 whitespace-nowrap">
                         <i class="fa-solid fa-chart-simple mr-2"></i>視覺化分析
                     </button>
-                    <button id="tabHistory" onclick="switchTab('history')"
-                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
-                        <i class="fa-solid fa-clock-rotate-left mr-2"></i>專案歷史
-                    </button>
-                    <button id="tabReport" onclick="switchTab('report')"
-                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
-                        <i class="fa-solid fa-file-lines mr-2"></i>報告輸出
-                    </button>
                     <button id="tabStats" onclick="switchTab('stats')"
-                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        class="py-4 text-base font-bold text-slate-500 hover:text-slate-700 whitespace-nowrap">
                         <i class="fa-solid fa-calendar-day mr-2"></i>人員時數
                     </button>
+                    <button id="tabReport" onclick="switchTab('report')"
+                        class="py-4 text-base font-bold text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-file-lines mr-2"></i>報告輸出
+                    </button>
+                    <button id="tabHistory" onclick="switchTab('history')"
+                        class="py-4 text-base font-bold text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-clock-rotate-left mr-2"></i>專案歷史
+                    </button>
                     <button id="tabLoop" onclick="switchTab('loop')"
-                        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap">
+                        class="py-4 text-base font-bold text-slate-500 hover:text-slate-700 whitespace-nowrap">
                         <i class="fa-solid fa-bolt-lightning mr-2"></i>開發循環診斷
                     </button>
                 </div>
@@ -618,24 +618,38 @@
                 </div>
 
                 <!-- Charts -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <!-- Row 1: Comparison & Composition -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Left: AI Variance Analysis -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                         <h3 class="text-base font-semibold mb-6 flex items-center">
-                            <i class="fa-solid fa-chart-bar mr-2 text-blue-500"></i>
-                            工時投入分布
+                            <i class="fa-solid fa-scale-balanced mr-2 text-indigo-500"></i>
+                            AI 預估 vs 實際偏差分析
                         </h3>
-                        <div class="relative h-72">
-                            <canvas id="hoursChart"></canvas>
+                        <div id="categoryVarianceList" class="space-y-3">
+                            <!-- Dynamic Content -->
                         </div>
                     </div>
+                    <!-- Right: Category Composition -->
                     <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                         <h3 class="text-base font-semibold mb-6 flex items-center">
                             <i class="fa-solid fa-chart-pie mr-2 text-rose-500"></i>
-                            類別分布
+                            類別投入比例
                         </h3>
                         <div class="relative h-72 flex items-center justify-center">
                             <canvas id="categoryChart"></canvas>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Time Distribution (Full Width) -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-base font-semibold mb-6 flex items-center">
+                        <i class="fa-solid fa-chart-bar mr-2 text-blue-500"></i>
+                        工時投入分布 (按序列任務)
+                    </h3>
+                    <div class="relative h-80">
+                        <canvas id="hoursChart"></canvas>
                     </div>
                 </div>
 
@@ -690,17 +704,18 @@
                                 <option value="dashboard">Dashboard 格式 (.md)</option>
                             </select>
                         </div>
-                        <div class="flex flex-col justify-center gap-1.5">
-                            <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-600">
-                                <input type="checkbox" id="includeStaffStats" checked class="rounded text-indigo-600">
+                        <div class="md:col-span-2 flex items-center gap-6 pt-6">
+                            <label class="flex items-center gap-3 cursor-pointer text-sm font-bold text-slate-700">
+                                <input type="checkbox" id="includeStaffStats" checked
+                                    class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
                                 人員時數統計
                             </label>
-                            <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-600">
-                                <input type="checkbox" id="includeDailyStats" checked class="rounded text-indigo-600">
+                            <label class="flex items-center gap-3 cursor-pointer text-sm font-bold text-slate-700">
+                                <input type="checkbox" id="includeDailyStats" checked
+                                    class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
                                 人員每日工時
                             </label>
                         </div>
-                        <div></div> <!-- Spacer -->
                         <div class="flex items-end">
                             <button onclick="generateReport()"
                                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2 text-sm">
@@ -1316,11 +1331,40 @@
             const dailyData = {};
 
             data.forEach(c => {
-                const date = new Date(c.modifiedTime).toLocaleDateString('zh-TW');
                 const eng = c.engineer || '未指定';
-                if (!dailyData[date]) dailyData[date] = {};
-                if (!dailyData[date][eng]) dailyData[date][eng] = 0;
-                dailyData[date][eng] += c.hours;
+                const startTime = new Date(c.createdTime);
+                const endTime = new Date(c.modifiedTime);
+                const totalHours = c.hours || 0;
+
+                // 如果起始時間相同或無效，退回到舊邏輯
+                if (endTime <= startTime || isNaN(startTime.getTime())) {
+                    const date = endTime.toLocaleDateString('zh-TW');
+                    if (!dailyData[date]) dailyData[date] = {};
+                    if (!dailyData[date][eng]) dailyData[date][eng] = 0;
+                    dailyData[date][eng] += totalHours;
+                    return;
+                }
+
+                // 計算跨越的天數
+                let tempStart = new Date(startTime);
+                const totalSpanMs = endTime - startTime;
+
+                while (tempStart < endTime) {
+                    const nextDay = new Date(tempStart);
+                    nextDay.setHours(24, 0, 0, 0); // 設定為當天午夜 (隔天 00:00)
+
+                    const endOfSegment = nextDay < endTime ? nextDay : endTime;
+                    const segmentMs = endOfSegment - tempStart;
+                    const segmentRatio = segmentMs / totalSpanMs;
+                    const segmentHours = totalHours * segmentRatio;
+
+                    const dateStr = tempStart.toLocaleDateString('zh-TW');
+                    if (!dailyData[dateStr]) dailyData[dateStr] = {};
+                    if (!dailyData[dateStr][eng]) dailyData[dateStr][eng] = 0;
+                    dailyData[dateStr][eng] += segmentHours;
+
+                    tempStart = nextDay;
+                }
             });
 
             const dates = Object.keys(dailyData).sort((a, b) => new Date(b) - new Date(a));
@@ -1398,44 +1442,54 @@
         }
 
         function renderDashboard(data) {
-            // Summary Cards
+            // 計算總量與預估量
             const totalHours = data.reduce((s, c) => s + c.hours, 0);
+            const totalEstMins = data.reduce((s, c) => s + (Math.round((c.complexityScore || 1) * 4 + 6)), 0);
+            const totalEstHours = totalEstMins / 60;
+            const totalVariance = totalHours - totalEstHours;
+            const totalVarPct = ((totalVariance / (totalEstHours || 1)) * 100).toFixed(1);
+
             const projects = [...new Set(data.map(c => c.project))];
             const categories = {};
             data.forEach(c => {
-                if (!categories[c.category]) categories[c.category] = { count: 0, hours: 0 };
+                const estH = (Math.round((c.complexityScore || 1) * 4 + 6)) / 60;
+                if (!categories[c.category]) categories[c.category] = { count: 0, hours: 0, estHours: 0 };
                 categories[c.category].count++;
                 categories[c.category].hours += c.hours;
+                categories[c.category].estHours += estH;
             });
 
-            document.getElementById('summaryCards').innerHTML = `
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-500 mb-1">對話總數</p>
-                        <h3 class="text-2xl font-bold">${data.length}</h3>
-                    </div>
-                    <div class="bg-blue-50/50 p-3 rounded-full text-blue-600"><i class="fa-solid fa-comments text-xl"></i></div>
+            // 更新摘要卡片容器樣式為 5 欄 (調整 padding 以適應更多卡片)
+            const cardsContainer = document.getElementById('summaryCards');
+            cardsContainer.className = "grid grid-cols-1 md:grid-cols-5 gap-4";
+
+            const varColor = totalVariance > 0 ? 'text-rose-600' : 'text-emerald-600';
+            const varIcon = totalVariance > 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+
+            cardsContainer.innerHTML = `
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div><p class="text-xs text-slate-500 mb-1 font-semibold">對話總數</p><h3 class="text-2xl font-bold">${data.length}</h3></div>
+                    <div class="bg-blue-50/50 p-3 rounded-full text-blue-600"><i class="fa-solid fa-comments text-lg"></i></div>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-500 mb-1">總工時</p>
-                        <h3 class="text-2xl font-bold">${totalHours.toFixed(1)}h</h3>
-                    </div>
-                    <div class="bg-emerald-50/50 p-3 rounded-full text-emerald-600"><i class="fa-solid fa-clock text-xl"></i></div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div><p class="text-xs text-slate-500 mb-1 font-semibold">實際工時</p><h3 class="text-2xl font-bold">${totalHours.toFixed(1)}h</h3></div>
+                    <div class="bg-emerald-50/50 p-3 rounded-full text-emerald-600"><i class="fa-solid fa-clock text-lg"></i></div>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-500 mb-1">涉及專案</p>
-                        <h3 class="text-2xl font-bold">${projects.length}</h3>
-                    </div>
-                    <div class="bg-indigo-50/50 p-3 rounded-full text-indigo-600"><i class="fa-solid fa-folder-tree text-xl"></i></div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div><p class="text-xs text-slate-500 mb-1 font-semibold">AI 預估</p><h3 class="text-2xl font-bold">${totalEstHours.toFixed(1)}h</h3></div>
+                    <div class="bg-indigo-50/50 p-3 rounded-full text-indigo-600"><i class="fa-solid fa-robot text-lg"></i></div>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">類別數</p>
-                        <h3 class="text-2xl font-bold">${Object.keys(categories).length}</h3>
+                        <p class="text-xs text-slate-500 mb-1 font-semibold">預估偏差</p>
+                        <h3 class="text-2xl font-bold ${varColor}">${totalVariance > 0 ? '+' : ''}${totalVariance.toFixed(1)}h</h3>
+                        <p class="text-xs ${varColor} font-bold mt-0.5"><i class="fa-solid ${varIcon} mr-1"></i>${totalVarPct}%</p>
                     </div>
-                    <div class="bg-amber-50/50 p-3 rounded-full text-amber-600"><i class="fa-solid fa-tags text-xl"></i></div>
+                    <div class="bg-slate-50/50 p-3 rounded-full text-slate-400"><i class="fa-solid fa-scale-balanced text-lg"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div><p class="text-xs text-slate-500 mb-1 font-semibold">專案項目</p><h3 class="text-2xl font-bold">${projects.length}</h3></div>
+                    <div class="bg-amber-50/50 p-3 rounded-full text-amber-600"><i class="fa-solid fa-folder-tree text-lg"></i></div>
                 </div>
             `;
 
@@ -1539,6 +1593,52 @@
                 }
             });
 
+            // 渲染類別偏差分析清單 (橫向優化版)
+            const varianceList = document.getElementById('categoryVarianceList');
+            const catColors = {
+                'DEBUG': '#ef4444',
+                'UI 調整': '#8b5cf6',
+                '架構變更': '#3b82f6',
+                '知識收集': '#22c55e',
+                '資料處理': '#f59e0b',
+                '開發模式': '#0ea5e9'
+            };
+
+            varianceList.innerHTML = `
+                <div class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">
+                    <span class="w-1/4">開發類別</span>
+                    <span class="w-2/4 text-center">預估 ➔ 實際</span>
+                    <span class="w-1/4 text-right">偏差 (比例)</span>
+                </div>
+                ${Object.entries(categories)
+                    .sort(([, statsA], [, statsB]) => statsB.hours - statsA.hours) // Sort by hours before mapping
+                    .map(([name, stats]) => {
+                        const diff = stats.hours - stats.estHours;
+                        const diffPct = ((diff / (stats.estHours || 1)) * 100).toFixed(0);
+                        const varColorClass = diff > 0 ? 'text-rose-500' : 'text-emerald-500';
+                        const themeColor = catColors[name] || '#64748b';
+
+                        return `
+                        <div class="flex items-center justify-between p-1.5 px-3 rounded-lg bg-slate-50/50 border-l-4 border-slate-200 hover:border-slate-300 transition-all mb-1.5 shadow-sm" style="border-left-color: ${themeColor}">
+                            <div class="w-1/4">
+                                <span class="text-base font-bold text-slate-700">${name}</span>
+                            </div>
+                            <div class="w-2/4 flex items-center justify-center gap-6">
+                                <span class="text-sm font-mono text-slate-400">${stats.estHours.toFixed(1)}h</span>
+                                <i class="fa-solid fa-arrow-right text-xs text-slate-300"></i>
+                                <span class="text-sm font-mono font-bold text-slate-800">${stats.hours.toFixed(1)}h</span>
+                            </div>
+                            <div class="w-1/4 text-right">
+                                <span class="text-base font-black ${varColorClass} tracking-tight">
+                                    ${diff > 0 ? '+' : ''}${diff.toFixed(1)}h
+                                    <span class="text-sm font-bold ml-2">(${diff > 0 ? '+' : ''}${diffPct}%)</span>
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    }).join('')}
+            `;
+
             // Detail Table
             document.getElementById('detailTableBody').innerHTML = data.map((c, index) => `
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
@@ -1615,12 +1715,37 @@
                 if (document.getElementById('includeDailyStats').checked) {
                     const engineers = [...new Set(filteredData.filter(c => c.engineer).map(c => c.engineer))].sort();
                     const dailyData = {};
+                    // 實作與 UI 一致的跨日拆分演算法
                     filteredData.forEach(c => {
-                        const date = new Date(c.modifiedTime).toLocaleDateString('zh-TW');
                         const eng = c.engineer || '未指定';
-                        if (!dailyData[date]) dailyData[date] = {};
-                        if (!dailyData[date][eng]) dailyData[date][eng] = 0;
-                        dailyData[date][eng] += c.hours;
+                        const startTime = new Date(c.createdTime);
+                        const endTime = new Date(c.modifiedTime);
+                        const totalHours = c.hours || 0;
+
+                        if (endTime <= startTime || isNaN(startTime.getTime())) {
+                            const date = endTime.toLocaleDateString('zh-TW');
+                            if (!dailyData[date]) dailyData[date] = {};
+                            if (!dailyData[date][eng]) dailyData[date][eng] = 0;
+                            dailyData[date][eng] += totalHours;
+                            return;
+                        }
+
+                        let tempStart = new Date(startTime);
+                        const totalSpanMs = endTime - startTime;
+
+                        while (tempStart < endTime) {
+                            const nextDay = new Date(tempStart);
+                            nextDay.setHours(24, 0, 0, 0);
+                            const endOfSegment = nextDay < endTime ? nextDay : endTime;
+                            const segmentRatio = (endOfSegment - tempStart) / totalSpanMs;
+                            const segmentHours = totalHours * segmentRatio;
+
+                            const dateStr = tempStart.toLocaleDateString('zh-TW');
+                            if (!dailyData[dateStr]) dailyData[dateStr] = {};
+                            if (!dailyData[dateStr][eng]) dailyData[dateStr][eng] = 0;
+                            dailyData[dateStr][eng] += segmentHours;
+                            tempStart = nextDay;
+                        }
                     });
 
                     // Sort dates ascending as requested (from small to large)

@@ -661,12 +661,15 @@ function parseArgs() {
         end: null,
         format: 'md',
         output: null,
+        sync: false,
         help: false
     };
 
     args.forEach(arg => {
         if (arg === '--help' || arg === '-h') {
             options.help = true;
+        } else if (arg === '--sync') {
+            options.sync = true;
         } else if (arg.startsWith('--project=')) {
             options.project = arg.split('=')[1];
         } else if (arg.startsWith('--start=')) {
@@ -711,6 +714,9 @@ CPDM 專案互動歷史報告產生器
                       - dashboard: Dashboard 相容格式
                       
   --output=<路徑>     自訂輸出檔案路徑
+  
+  --sync              自動將掃描結果同步回 conversation_metadata.json
+                      (僅新增不存在的 ID，不覆寫手動調整過內容)
   
   --help, -h          顯示此說明
 
@@ -764,10 +770,65 @@ console.log();
 
 // 根據格式產生報告
 let report, outputExt;
+const conversations = scanAllConversations();
+
+// ====== 執行同步邏輯 (如果啟動 --sync) ======
+if (options.sync) {
+    console.log('🔄 啟動同步模式...');
+    let syncCount = 0;
+
+    // 讀取原始檔案以保留註解與標頭
+    let fullMetadata = {
+        "_說明": "對話元數據勘誤表 - 用於補充自動掃描無法取得的資訊",
+        "conversations": {}
+    };
+
+    if (fs.existsSync(METADATA_FILE)) {
+        try {
+            fullMetadata = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
+        } catch (e) {
+            console.error('⚠️ 無法解析現有勘誤檔，將建立新內容');
+        }
+    }
+
+    if (!fullMetadata.conversations) fullMetadata.conversations = {};
+
+    conversations.forEach(c => {
+        const existing = fullMetadata.conversations[c.id];
+
+        // 判斷是否需要更新：
+        // 1. 原本不存在
+        // 2. 存在但未鎖定 (locked !== true) 且目前的標題是預設的「對話 xxxx」格式
+        const isDefaultTitle = existing && (existing.title.startsWith('對話 ') || existing.title === '進行中的對話');
+        const isLocked = existing && existing.locked === true;
+
+        if (!existing || (!isLocked && isDefaultTitle)) {
+            // 如果是更新現有條目，保留可能的 locked 屬性或其他自訂欄位
+            fullMetadata.conversations[c.id] = {
+                ...(existing || {}),
+                title: c.title,
+                project: c.project,
+                category: c.category,
+                hours: c.hours
+            };
+            syncCount++;
+        }
+    });
+
+    if (syncCount > 0) {
+        fullMetadata["_最後更新"] = new Date().toISOString().split('T')[0];
+        fs.writeFileSync(METADATA_FILE, JSON.stringify(fullMetadata, null, 4), 'utf8');
+        console.log(`✅ 同步完成！已新增 ${syncCount} 筆對話元數據至 ${METADATA_FILE}`);
+    } else {
+        console.log('ℹ️ 所有對話已在勘誤表中，無需更新。');
+    }
+}
 
 switch (options.format) {
     case 'json':
-        report = JSON.stringify(generateJSON(options.project, options.start, options.end), null, 2);
+        // 修改 generateJSON 以接受已掃描的資料，避免重複掃描
+        const jsonData = generateJSON(options.project, options.start, options.end);
+        report = JSON.stringify(jsonData, null, 2);
         outputExt = '.json';
         break;
     case 'dashboard':
