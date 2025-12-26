@@ -20,152 +20,127 @@
         "8588a97a-d3b9-4a53-bed1-978fffd3955e": {
             "title": "UI 說明文件生成",
             "project": "福至心靈籤",
-            "category": "知識收集",
-            "hours": 0.4
+            "category": "知識收集"
         },
         "176a1e82-c390-404a-b0c4-092f525dd42f": {
             "title": "Submit Project to GitHub",
             "project": "福至心靈籤",
-            "category": "其他",
-            "hours": 1
+            "category": "其他"
         },
         "26e36f3a-92c1-4dcd-aef8-fae1a832dccc": {
             "title": "本地籤詩收集校正",
             "project": "福至心靈籤",
-            "category": "知識收集",
-            "hours": 0.4
+            "category": "知識收集"
         },
         "d2679a94-9409-4328-a1aa-0651d6f4ae1e": {
             "title": "Google Account Model Balance",
             "project": "AI專案管理",
-            "category": "知識收集",
-            "hours": 0.6
+            "category": "知識收集"
         },
         "c0118b5a-ded4-45c7-9392-3d601d8d6b1e": {
             "title": "可調桌數及遊戲時間",
             "project": "常春藤尾牙互動遊戲",
-            "category": "DEBUG",
-            "hours": 2.6
+            "category": "DEBUG"
         },
         "4c0b2de1-f775-42b5-8342-b2b7bbe7ff3e": {
             "title": "Optimize Game Display",
             "project": "常春藤尾牙互動遊戲",
-            "category": "UI 調整",
-            "hours": 1.5
+            "category": "UI 調整"
         },
         "d1b790ad-8b63-43aa-b47e-34b7fb67efc3": {
             "title": "強化紀錄呈現與功能",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 2.6
+            "category": "UI 調整"
         },
         "9eb84981-2b06-4168-856e-827d06ff1035": {
             "title": "Gemini API Key Debugging",
             "project": "福至心靈籤",
-            "category": "DEBUG",
-            "hours": 0.1
+            "category": "DEBUG"
         },
         "f62a0ee0-d82b-4475-a603-6a572354cd49": {
             "title": "Supabase Schema Fixes",
             "project": "福至心靈籤",
-            "category": "架構變更",
-            "hours": 6.5
+            "category": "架構變更"
         },
         "9b18c3e6-e79b-4628-996c-e12849421eeb": {
             "title": "每日工時及數據整合",
             "project": "AI專案管理",
-            "category": "資料處理",
-            "hours": 2.5
+            "category": "資料處理"
         },
         "b3615b63-3c6f-48b1-b25a-86884f204649": {
             "title": "增加文昌、月老籤詩",
             "project": "福至心靈籤",
-            "category": "DEBUG",
-            "hours": 2.6
+            "category": "DEBUG"
         },
         "a2f3745b-9c75-4b84-b201-d238ae25b16c": {
             "title": "切換本地 LM Studio API 解籤",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 0.7
+            "category": "UI 調整"
         },
         "12e24fad-1634-4a17-b41e-865257433f65": {
             "title": "多元認證登錄功能",
             "project": "福至心靈籤",
-            "category": "資料處理",
-            "hours": 1.1
+            "category": "資料處理"
         },
         "cb1c0e2e-e316-4f43-a3e0-92c0a29a42f5": {
             "title": "收集真實籤詩來源",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 1
+            "category": "UI 調整"
         },
         "89329067-656d-4c37-b766-174f78e61554": {
             "title": "依籤數調整隨機數上限",
             "project": "福至心靈籤",
-            "category": "DEBUG",
-            "hours": 2.2
+            "category": "DEBUG"
         },
         "da22efa1-38d5-4098-b059-de93b121db79": {
             "title": "神明別UI呈現動態",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 5
+            "category": "UI 調整"
         },
         "771a2bfa-9c6d-4133-b9ee-725885ee45d6": {
             "title": "全面優化專案介面與功能實作計劃",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 17
+            "category": "UI 調整"
         },
         "bf5a9afd-c25c-4535-b425-70c900b37a74": {
             "title": "卷軸展開動態展示",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 8.2
+            "category": "UI 調整"
         },
         "c3b6572d-88d2-4298-a4ae-6feb9823bcaf": {
             "title": "跨平台部署技術作業清單",
             "project": "福至心靈籤",
-            "category": "DEBUG",
-            "hours": 2.4
+            "category": "DEBUG"
         },
         "1cc0c527-fc2d-4260-b9d0-6e1e4360066b": {
             "title": "使用說明及版權頁",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 1.6
+            "category": "UI 調整"
         },
         "4411fd3b-3cc1-4d45-90e1-64a261dabf86": {
             "title": "系統全面中文化計畫",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 2.1
+            "category": "UI 調整"
         },
         "d2ffd144-6fc4-4d7d-b1d8-245a9f7f1095": {
             "title": "跨平台程式校調",
             "project": "福至心靈籤",
-            "category": "UI 調整",
-            "hours": 0.4
+            "category": "UI 調整"
         },
         "7c6870ca-d1bd-4574-a1e5-952df7709e03": {
             "title": "工時統計儀表板實作",
             "project": "AI專案管理",
-            "category": "開發模式",
-            "hours": 20
+            "category": "開發模式"
         },
         "9caf95ae-a3c8-49ba-b4a9-3566bf990c80": {
             "title": "儀表板跨日工時邏輯優化",
             "project": "AI專案管理",
-            "category": "開發模式",
-            "hours": 19.1
+            "category": "開發模式"
         },
         "8ba54ee3-5ec9-42f0-b39e-8165788b74dd": {
             "title": "進行中的對話",
             "project": "AI專案管理",
-            "category": "開發模式",
-            "hours": 0.4
+            "category": "開發模式"
         }
     }
 }

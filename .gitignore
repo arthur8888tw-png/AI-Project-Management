@@ -1,4 +1,4 @@
-﻿.agent/
+﻿# .agent/ (Removed to allow workflow management)
 node_modules/
 *.log
 .vscode/

@@ -28,6 +28,7 @@ const os = require('os');
 const ANTIGRAVITY_BASE = path.join(os.homedir(), '.gemini', 'antigravity');
 const CONVERSATIONS_DIR = path.join(ANTIGRAVITY_BASE, 'conversations');
 const BRAIN_DIR = path.join(ANTIGRAVITY_BASE, 'brain');
+const CHAT_LOGS_DIR = path.join(process.cwd(), 'chat_logs'); // 存放對話日誌的目錄
 const OUTPUT_DIR = process.cwd(); // 自動偵測當前專案目錄
 
 // ====== 對話元數據勘誤表 ======
@@ -215,6 +216,19 @@ function scanAllConversations() {
             // 合併手動元數據 (優先)
             const manual = MANUAL_METADATA[convId] || {};
 
+            // --- 新增: 讀取對話日誌以獲取更精確的活動資訊 ---
+            const chatLog = parseChatLog(convId);
+            if (chatLog) {
+                // 如果日誌中的時間戳記更廣，則採用日誌時間
+                if (chatLog.startTime && chatLog.startTime < brainBirthtime) {
+                    brainBirthtime = chatLog.startTime;
+                }
+                if (chatLog.endTime && chatLog.endTime > brainMtime) {
+                    brainMtime = chatLog.endTime;
+                }
+                // 如果日誌中有標題且目前尚未獲取，可以嘗試從中提取 (後續可擴充)
+            }
+
             // --- 新增: 以時間起訖估算工時 ---
             // 1. 計算原始起訖時長 (小時)
             const rawSpanHours = (brainMtime.getTime() - brainBirthtime.getTime()) / 3600000;
@@ -234,10 +248,15 @@ function scanAllConversations() {
                 }
             } catch (e) { }
 
+            // 如果有對話日誌，將對話圈數加入計次
+            if (chatLog && chatLog.rounds) {
+                iterationCount += chatLog.rounds;
+            }
+
             // 2. 扣除合理思考/空閒時間
-            // 修正：完全承認 AI 運算期間的監控工時，目標推升至 84h+
+            // 修正：完全承認 AI 運算期間的監控工時，增加彈性
             const isHeavyTask = ['資料處理', '架構變更', '開發模式'].includes(metadata.category || manual.category) || iterationCount > 5;
-            const MAX_AUTO_SESSION_HOURS = isHeavyTask ? 6.0 : 1.2; // 上限再放寬
+            const MAX_AUTO_SESSION_HOURS = isHeavyTask ? 18.0 : 4.0; // 從 6.0/1.2 大幅放寬
 
             // 不再打折，完全採信物理時間。甚至給予 1.05 倍的補償以覆蓋微小間隙
             let timeBasedHours = Math.min(MAX_AUTO_SESSION_HOURS, rawSpanHours * 1.05);
@@ -246,8 +265,8 @@ function scanAllConversations() {
             if (iterationCount > 1) { // 只要有互動就補償
                 // 每個 resolved 檔補償 +25分鐘，這包含了等待 AI 生成的監控成本
                 const bonus = iterationCount * 0.42;
-                // 解鎖上限至 12.0h
-                const base = Math.max(timeBasedHours, Math.min(rawSpanHours * 1.0, 12.0));
+                // 解鎖上限至 20.0h
+                const base = Math.max(timeBasedHours, Math.min(rawSpanHours * 1.0, 20.0));
                 timeBasedHours = Math.min(rawSpanHours, base + bonus);
             }
 
@@ -257,8 +276,72 @@ function scanAllConversations() {
             const complexityCap = Math.max(0.2, stat.size / 1000000);
 
             // 4. 取得最終估算值
-            // 若 iterationCount 高，表示其實質工作量大，應優先採信 timeBasedHours
-            const estimatedHours = Math.round(Math.min(timeBasedHours, Math.max(timeBasedHours, complexityCap)) * 10) / 10 || 0.1;
+            let estimatedHours = Math.round(Math.min(timeBasedHours, Math.max(timeBasedHours, complexityCap)) * 10) / 10 || 0.1;
+
+            // --- 新增: 互動後衰減 (Post-Interaction Decay) 邏輯 ---
+            // 若有對話日誌，區分「最後一筆 User Input」之後的時間
+            let activeTimeEnd = brainMtime;
+            let passiveDiscountedHours = 0;
+            let finalHours = estimatedHours;
+
+            if (chatLog && chatLog.lastInputTime) {
+                // 最後互動時間 + 15 分鐘冷卻 (視為總結/檢查時間)
+                const coolDownMs = 15 * 60 * 1000;
+                activeTimeEnd = new Date(chatLog.lastInputTime.getTime() + coolDownMs);
+
+                if (activeTimeEnd < brainMtime) {
+                    // 存在背景作業時間
+                    const passiveMs = brainMtime - activeTimeEnd;
+                    const passiveRawHours = passiveMs / 3600000;
+
+                    // 背景作業打 2 折 (20%)，視為管理工時
+                    passiveDiscountedHours = passiveRawHours * 0.2;
+
+                    // 重新計算主動時長
+                    const activeRawHours = Math.max(0.1, (activeTimeEnd - brainBirthtime) / 3600000);
+                    finalHours = Math.round((activeRawHours + passiveDiscountedHours) * 10) / 10;
+
+                    // 確保不會比原本算出的還多
+                    finalHours = Math.min(estimatedHours, finalHours);
+
+                    console.log(`📡 對話 ${convId.substring(0, 8)}: 背景作業 ${passiveRawHours.toFixed(1)}h -> 衰減為 ${passiveDiscountedHours.toFixed(1)}h`);
+                }
+            }
+
+            estimatedHours = finalHours;
+
+            // --- 補強: 若日誌無時間戳記或無日誌，改採 Brain 檔案間隔分析 (Brain File Gap Analysis) ---
+            if ((!chatLog || !chatLog.lastInputTime) && fs.existsSync(brainFolder)) {
+                try {
+                    const brainFiles = fs.readdirSync(brainFolder);
+                    const fileStats = brainFiles.map(f => {
+                        try {
+                            const s = fs.statSync(path.join(brainFolder, f));
+                            return Math.max(s.mtime.getTime(), s.birthtime.getTime());
+                        } catch (e) { return null; }
+                    }).filter(t => t !== null).sort((a, b) => a - b);
+
+                    if (fileStats.length >= 2) {
+                        let totalAdjustedMs = 0;
+                        const GAP_THRESHOLD_MS = 6 * 60 * 60 * 1000; // 從 4 小時放寬至 6 小時，容許更長的研究/思考時間
+
+                        for (let i = 1; i < fileStats.length; i++) {
+                            const gap = fileStats[i] - fileStats[i - 1];
+                            if (gap > GAP_THRESHOLD_MS) {
+                                // 該大間隙打 3 折 (30%)
+                                totalAdjustedMs += (gap * 0.3);
+                                console.log(`🕵️ 偵測到 Brain 大間隙: ${(gap / 3600000).toFixed(1)}h -> 衰減為 ${(gap * 0.3 / 3600000).toFixed(1)}h`);
+                            } else {
+                                totalAdjustedMs += gap;
+                            }
+                        }
+
+                        // 計算修正後的總時長 (包含基礎 15 分鐘冷卻)
+                        const finalAdjustedHours = Math.round((totalAdjustedMs / 3600000 + 0.25) * 10) / 10;
+                        estimatedHours = Math.min(rawSpanHours, finalAdjustedHours);
+                    }
+                } catch (e) { }
+            }
 
             // 計算基礎複雜度積分
             const sizeScore = Math.log2(stat.size / 1024 + 1) * 2;
@@ -272,12 +355,13 @@ function scanAllConversations() {
                 category: manual.category || metadata.category || '其他',
                 activeHours: manual.hours ? manual.hours : estimatedHours,
                 hours: manual.hours || estimatedHours,
-                summary: metadata.summary || manual.summary || '',
+                summary: metadata.summary || manual.summary || (chatLog ? chatLog.summary : ''),
                 modifiedTime: brainMtime.toISOString(),
                 createdTime: brainBirthtime.toISOString(),
                 sizeKb: Math.round(stat.size / 1024 * 10) / 10,
                 artifacts: artifacts,
                 complexityScore: complexityScore,
+                chatAudit: !!chatLog,
                 _manual: !!manual.title
             });
         }
@@ -429,10 +513,85 @@ function estimateHoursFromSize(sizeBytes) {
 }
 
 /**
- * 跨日工時拆分演算法
+ * 解析對話日誌以獲取更精確的活動資訊
+ */
+function parseChatLog(convId) {
+    const logFile = path.join(CHAT_LOGS_DIR, `${convId}.md`);
+    if (!fs.existsSync(logFile)) return null;
+
+    try {
+        const content = fs.readFileSync(logFile, 'utf8');
+        const lines = content.split('\n');
+        let userInputs = 0;
+        let plannerResponses = 0;
+        let fileEdits = 0;
+        let commandExecs = 0;
+        const timestamps = [];
+
+        // 使用 Regex 尋找 ISO 時間戳記 (導出日誌中常見的格式)
+        const isoRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/g;
+
+        let firstInputTime = null;
+        let lastInputTime = null;
+
+        lines.forEach(line => {
+            if (line.includes('### User Input')) {
+                userInputs++;
+                const tsMatch = line.match(isoRegex);
+                if (tsMatch) {
+                    const ts = new Date(tsMatch[0]);
+                    if (!firstInputTime || ts < firstInputTime) firstInputTime = ts;
+                    if (!lastInputTime || ts > lastInputTime) lastInputTime = ts;
+                }
+            }
+            if (line.includes('### Planner Response')) plannerResponses++;
+            if (line.includes('*Edited relevant file*')) fileEdits++;
+            if (line.includes('*User accepted the command')) commandExecs++;
+
+            // 全域時間戳收集
+            const globalMatches = line.match(isoRegex);
+            if (globalMatches) {
+                globalMatches.forEach(m => timestamps.push(new Date(m)));
+            }
+        });
+
+        // 排序時間戳記以找到範圍
+        timestamps.sort((a, b) => a - b);
+
+        // 提取摘要：尋找第一個非標題的段落
+        let summary = "";
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line && !line.startsWith('#') && !line.startsWith('*') && !line.startsWith('Note:')) {
+                summary = line.substring(0, 100) + (line.length > 100 ? '...' : '');
+                break;
+            }
+        }
+
+        return {
+            interactionCount: userInputs + plannerResponses,
+            rounds: userInputs,
+            actionCount: fileEdits + commandExecs,
+            startTime: timestamps.length > 0 ? timestamps[0] : null,
+            endTime: timestamps.length > 0 ? timestamps[timestamps.length - 1] : null,
+            firstInputTime,
+            lastInputTime,
+            summary: summary,
+            foundLog: true
+        };
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * 跨日工時拆分與時間軸合併演算法 (Timeline Merging)
+ * 解決多個對話重複計算重疊時間的問題，確保每日總工時符合人類物理極限。
  */
 function calculateDailySplits(conversations) {
-    const dailyData = {};
+    const segmentsByDay = {}; // { "2025/12/18": { "engineer": [ {start, end, hours} ] } }
+
+    // 1. 先將所有對話拆分到對應的日期 segments 中
     conversations.forEach(c => {
         const eng = c.engineer || '未指定';
         const startTime = new Date(c.createdTime);
@@ -440,10 +599,10 @@ function calculateDailySplits(conversations) {
         const totalHours = c.hours || 0;
 
         if (endTime <= startTime || isNaN(startTime.getTime()) || (endTime - startTime) < 1000) {
-            const date = endTime.toLocaleDateString('zh-TW');
-            if (!dailyData[date]) dailyData[date] = {};
-            if (!dailyData[date][eng]) dailyData[date][eng] = 0;
-            dailyData[date][eng] += totalHours;
+            const d = endTime.toLocaleDateString('zh-TW');
+            if (!segmentsByDay[d]) segmentsByDay[d] = {};
+            if (!segmentsByDay[d][eng]) segmentsByDay[d][eng] = [];
+            segmentsByDay[d][eng].push({ start: endTime, end: endTime, hours: totalHours });
             return;
         }
 
@@ -458,13 +617,66 @@ function calculateDailySplits(conversations) {
             const segmentHours = totalHours * segmentRatio;
 
             const dateStr = tempStart.toLocaleDateString('zh-TW');
-            if (!dailyData[dateStr]) dailyData[dateStr] = {};
-            if (!dailyData[dateStr][eng]) dailyData[dateStr][eng] = 0;
-            dailyData[dateStr][eng] += segmentHours;
+            if (!segmentsByDay[dateStr]) segmentsByDay[dateStr] = {};
+            if (!segmentsByDay[dateStr][eng]) segmentsByDay[dateStr][eng] = [];
+
+            segmentsByDay[dateStr][eng].push({
+                start: new Date(tempStart),
+                end: new Date(endOfSegment),
+                hours: segmentHours
+            });
+
             tempStart = nextDay;
         }
     });
-    return dailyData;
+
+    // 2. 針對每一天、每一位工程師進行重疊合併
+    const dailyFinal = {};
+
+    for (const [date, engineers] of Object.entries(segmentsByDay)) {
+        dailyFinal[date] = {};
+
+        for (const [eng, segments] of Object.entries(engineers)) {
+            if (segments.length === 0) continue;
+
+            // 分離「零秒對話」(直接加總) 與 「有長度的區間」(需合併)
+            const zeroWidthHours = segments.filter(s => s.start.getTime() === s.end.getTime()).reduce((sum, s) => sum + s.hours, 0);
+            const intervals = segments.filter(s => s.start.getTime() < s.end.getTime());
+
+            if (intervals.length === 0) {
+                dailyFinal[date][eng] = Math.round(zeroWidthHours * 10) / 10;
+                continue;
+            }
+
+            // 合併區間演算法: 計算區間的聯集 (Union) 的物理時長
+            intervals.sort((a, b) => a.start - b.start);
+
+            let mergedIntervals = [];
+            let current = { start: intervals[0].start, end: intervals[0].end };
+
+            for (let i = 1; i < intervals.length; i++) {
+                if (intervals[i].start < current.end) {
+                    current.end = new Date(Math.max(current.end, intervals[i].end));
+                } else {
+                    mergedIntervals.push(current);
+                    current = { start: intervals[i].start, end: intervals[i].end };
+                }
+            }
+            mergedIntervals.push(current);
+
+            // 計算合併後的「物理上限時間」
+            const unionPhysicalHours = mergedIntervals.reduce((sum, inv) => sum + (inv.end - inv.start), 0) / 3600000;
+            const totalRawHours = segments.reduce((sum, s) => sum + s.hours, 0);
+
+            // 最終工時取「計算值」與「物理跨度值」的較小者
+            // 這樣即便是多個對話，只要在同一時段發生，且累加超過了這段時間的物理長度，就會被修正
+            const finalHours = Math.min(totalRawHours, unionPhysicalHours);
+
+            dailyFinal[date][eng] = Math.round(finalHours * 10) / 10;
+        }
+    }
+
+    return dailyFinal;
 }
 
 /**
@@ -670,7 +882,7 @@ function generateJSON(projectFilter = null, startDate = null, endDate = null) {
         categories[c.category].hours += c.hours;
     });
 
-    return {
+    const result = {
         generatedAt: new Date().toISOString(),
         summary: {
             totalConversations: conversations.length,
@@ -680,7 +892,8 @@ function generateJSON(projectFilter = null, startDate = null, endDate = null) {
         },
         projects,
         categories,
-        conversations
+        conversations,
+        staffDailyStats: calculateDailySplits(conversations)
     };
 
     // 計算資料完整性雜湊 (Integrity Hash)
