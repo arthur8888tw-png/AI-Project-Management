@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevTools 溝通訓練系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .progress-section {
+            margin-bottom: 24px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 32px;
+            background: #f0f0f0;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .quiz-container {
+            display: none;
+        }
+
+        .quiz-container.active {
+            display: block;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .question-number {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .category-badge {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 24px;
+        }
+
+        .demo-box {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            font-family: 'Courier New', monospace;
+            position: relative;
+        }
+
+        .demo-label {
+            position: absolute;
+            top: -12px;
+            left: 16px;
+            background: white;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            border-radius: 4px;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .feedback {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .feedback-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .weakness-list {
+            list-style: none;
+        }
+
+        .weakness-item {
+            padding: 12px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+
+        .strength-item {
+            padding: 12px;
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .hint-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .hint-box.show {
+            display: block;
+        }
+
+        .choices-container {
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .choice-option {
+            padding: 16px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .choice-option:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .choice-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .choice-option label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 主頁面 -->
+        <div id="homePage" class="card">
+            <h1>🎯 DevTools 溝通訓練系統</h1>
+            <p class="subtitle">學會用正確的方式與 AI 對話,提升 60% 溝通效率</p>
+
+            <div class="nav-buttons">
+                <button class="btn btn-primary" onclick="startQuiz()">🚀 開始練習</button>
+                <button class="btn btn-secondary" onclick="showStats()">📊 查看成績</button>
+                <button class="btn btn-secondary" onclick="resetProgress()">🔄 重置進度</button>
+            </div>
+
+            <div class="progress-section">
+                <h3 style="margin-bottom: 12px;">📈 你的進度</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overallProgress" style="width: 0%">0%</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalAttempted">0</div>
+                        <div class="stat-label">已完成題目</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCorrect">0</div>
+                        <div class="stat-label">答對題目</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="accuracyRate">0%</div>
+                        <div class="stat-label">準確率</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="weaknessSection" class="hidden">
+                <h3 style="margin-bottom: 12px; color: #ffc107;">⚠️ 需要加強</h3>
+                <ul class="weakness-list" id="weaknessList"></ul>
+            </div>
+
+            <div id="strengthSection" class="hidden">
+                <h3 style="margin-bottom: 12px; color: #28a745;">💪 表現優秀</h3>
+                <ul class="weakness-list" id="strengthList"></ul>
+            </div>
+        </div>
+
+        <!-- 答題頁面 -->
+        <div id="quizPage" class="card quiz-container">
+            <div class="question-header">
+                <div class="question-number" id="questionNumber">題目 1/10</div>
+                <div class="category-badge" id="categoryBadge">元素定位</div>
+            </div>
+
+            <div class="question-text" id="questionText"></div>
+
+            <div class="demo-box" id="demoBox">
+                <div class="demo-label">📱 示範網頁</div>
+                <div id="demoContent"></div>
+            </div>
+
+            <input type="text" class="answer-input" id="answerInput" placeholder="請輸入你的答案...">
+
+            <div class="choices-container" id="choicesContainer"></div>
+
+            <div class="quiz-actions">
+                <button class="btn btn-primary" onclick="submitAnswer()">✅ 提交答案</button>
+                <button class="btn btn-secondary" onclick="showHint()">💡 提示</button>
+                <button class="btn btn-secondary" onclick="skipQuestion()">⏭️ 跳過</button>
+            </div>
+
+            <div class="hint-box" id="hintBox"></div>
+
+            <div class="feedback" id="feedback">
+                <div class="feedback-title" id="feedbackTitle"></div>
+                <div id="feedbackContent"></div>
+                <button class="btn btn-primary" onclick="nextQuestion()" style="margin-top: 12px;">下一題 →</button>
+            </div>
+        </div>
+
+        <!-- 成績頁面 -->
+        <div id="statsPage" class="card hidden">
+            <h1>📊 詳細成績</h1>
+            <p class="subtitle">分析你的強項與弱點</p>
+
+            <button class="btn btn-secondary" onclick="backToHome()" style="margin-bottom: 24px;">← 返回首頁</button>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statsTotal">0</div>
+                    <div class="stat-label">總題數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statsCorrect">0</div>
+                    <div class="stat-label">答對</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statsAccuracy">0%</div>
+                    <div class="stat-label">準確率</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 32px;">
+                <h3 style="margin-bottom: 16px;">📈 各類別表現</h3>
+                <div id="categoryStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
