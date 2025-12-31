@@ -30,6 +30,7 @@ const CONVERSATIONS_DIR = path.join(ANTIGRAVITY_BASE, 'conversations');
 const BRAIN_DIR = path.join(ANTIGRAVITY_BASE, 'brain');
 const CHAT_LOGS_DIR = path.join(process.cwd(), 'chat_logs'); // 存放對話日誌的目錄
 const OUTPUT_DIR = process.cwd(); // 自動偵測當前專案目錄
+const TIMESTAMPS_DIR = path.join(OUTPUT_DIR, 'timestamps'); // 時間戳記追蹤目錄
 
 // ====== 對話元數據勘誤表 ======
 // 從外部 JSON 檔案載入，方便人工維護
@@ -218,6 +219,7 @@ function scanAllConversations() {
 
             // --- 新增: 讀取對話日誌以獲取更精確的活動資訊 ---
             const chatLog = parseChatLog(convId);
+            const timestampData = loadTimestampData(convId);
             if (chatLog) {
                 // 如果日誌中的時間戳記更廣，則採用日誌時間
                 if (chatLog.startTime && chatLog.startTime < brainBirthtime) {
@@ -362,7 +364,11 @@ function scanAllConversations() {
                 artifacts: artifacts,
                 complexityScore: complexityScore,
                 chatAudit: !!chatLog,
-                _manual: !!manual.title
+                _manual: !!manual.title,
+                // 時間戳記數據 (如果存在)
+                timestampHours: timestampData ? timestampData.totalInteractionHours : null,
+                timestampInteractions: timestampData ? timestampData.interactionCount : null,
+                hasTimestampData: !!timestampData
             });
         }
 
@@ -580,6 +586,97 @@ function parseChatLog(convId) {
             foundLog: true
         };
     } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * 載入時間戳記數據以獲取精確的互動工時
+     * @param {string} convId - 對話 ID
+     * @returns {Object|null} 時間戳記數據
+     */
+function loadTimestampData(convId) {
+    const timestampDir = path.join(TIMESTAMPS_DIR, convId);
+    if (!fs.existsSync(timestampDir)) return null;
+
+    try {
+        const files = fs.readdirSync(timestampDir)
+            .filter(f => f.endsWith('.json'))
+            .sort(); // 按檔名排序,確保時間順序
+
+        if (files.length === 0) return null;
+
+        const events = files.map(filename => {
+            const filepath = path.join(timestampDir, filename);
+            const content = fs.readFileSync(filepath, 'utf-8');
+            return JSON.parse(content);
+        });
+
+        // 修正: 依據時間戳記排序,而不是檔名
+        events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        // 配對 user_question 和 ai_completion
+        const interactions = [];
+        let totalHours = 0;
+        let userThinkingHours = 0;
+        let aiProcessingHours = 0;
+
+        for (let i = 0; i < events.length; i++) {
+            if (events[i].eventType === 'user_question') {
+                // 尋找下一個 ai_completion
+                let completionIndex = -1;
+                for (let j = i + 1; j < events.length; j++) {
+                    if (events[j].eventType === 'ai_completion') {
+                        completionIndex = j;
+                        break;
+                    }
+                }
+
+                if (completionIndex !== -1) {
+                    const questionTime = new Date(events[i].timestamp);
+                    const completionTime = new Date(events[completionIndex].timestamp);
+                    const hours = (completionTime - questionTime) / (1000 * 60 * 60);
+
+                    interactions.push({
+                        questionTime: questionTime.toISOString(),
+                        completionTime: completionTime.toISOString(),
+                        hours: parseFloat(hours.toFixed(3)),
+                        questionText: events[i].metadata.questionText,
+                        taskSummary: events[completionIndex].metadata.taskSummary,
+                        complexity: events[completionIndex].metadata.complexity
+                    });
+
+                    totalHours += hours;
+                    aiProcessingHours += hours;
+                }
+            }
+        }
+
+        // 計算使用者思考時間 (兩次互動之間的間隔)
+        for (let i = 0; i < interactions.length - 1; i++) {
+            const currentEnd = new Date(interactions[i].completionTime);
+            const nextStart = new Date(interactions[i + 1].questionTime);
+            const thinkingTime = (nextStart - currentEnd) / (1000 * 60 * 60);
+
+            // 只計算合理範圍內的思考時間 (< 2 小時)
+            if (thinkingTime > 0 && thinkingTime < 2) {
+                userThinkingHours += thinkingTime;
+            }
+        }
+
+        return {
+            conversationId: convId,
+            totalInteractionHours: parseFloat(totalHours.toFixed(3)),
+            userThinkingHours: parseFloat(userThinkingHours.toFixed(3)),
+            aiProcessingHours: parseFloat(aiProcessingHours.toFixed(3)),
+            interactionCount: interactions.length,
+            interactions,
+            startTime: events.length > 0 ? new Date(events[0].timestamp) : null,
+            endTime: events.length > 0 ? new Date(events[events.length - 1].timestamp) : null,
+            hasTimestampData: true
+        };
+    } catch (e) {
+        console.error(`⚠️ 載入時間戳記數據失敗 (${convId}):`, e.message);
         return null;
     }
 }

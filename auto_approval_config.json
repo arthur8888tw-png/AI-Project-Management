@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "description": "自動放行規則配置 - 定義哪些操作需要使用者確認,哪些可以自動執行",
+  
+  "requireApproval": {
+    "description": "需要使用者確認的操作",
+    "artifacts": [
+      "implementation_plan.md",
+      "task.md"
+    ],
+    "filePatterns": [
+      "**/implementation_plan.md",
+      "**/task.md"
+    ],
+    "operations": [
+      "create_plan",
+      "update_plan",
+      "create_task",
+      "update_task"
+    ]
+  },
+  
+  "autoApprove": {
+    "description": "自動放行的操作",
+    "operations": [
+      "code_edit",
+      "code_create",
+      "test_execution",
+      "documentation",
+      "image_generation",
+      "browser_testing",
+      "file_search",
+      "data_processing",
+      "command_execution",
+      "dependency_install",
+      "build_process",
+      "lint_fix",
+      "format_code"
+    ],
+    "filePatterns": [
+      "**/*.js",
+      "**/*.html",
+      "**/*.css",
+      "**/*.json",
+      "**/*.md",
+      "**/*.txt",
+      "**/*.ps1",
+      "**/*.sh",
+      "**/*.bat",
+      "!**/implementation_plan.md",
+      "!**/task.md"
+    ]
+  },
+  
+  "timestampTracking": {
+    "description": "時間戳記追蹤配置",
+    "enabled": true,
+    "recordUserQuestions": true,
+    "recordAICompletions": true,
+    "storageDir": "timestamps",
+    "autoExport": true,
+    "exportInterval": "daily"
+  },
+  
+  "safetyRules": {
+    "description": "安全規則 - 即使在自動放行清單中,這些操作仍需確認",
+    "alwaysConfirm": [
+      "delete_database",
+      "drop_table",
+      "remove_git_history",
+      "force_push",
+      "delete_production_data"
+    ],
+    "dangerousPatterns": [
+      "**/production/**",
+      "**/.env.production",
+      "**/secrets/**"
+    ]
+  },
+  
+  "logging": {
+    "enabled": true,
+    "logFile": "auto_approval_decisions.log",
+    "logLevel": "info",
+    "includeTimestamp": true,
+    "includeReason": true
+  }
+}

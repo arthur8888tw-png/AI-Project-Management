@@ -1,0 +1,56 @@
+[
+  {
+    "id": "1",
+    "date": "2025-12-20",
+    "project": "福至心靈籤",
+    "engineer": "Engineer A",
+    "workItem": "UI Implementation",
+    "timeSpent": 4.0,
+    "description": "Implemented input screen A"
+  },
+  {
+    "id": "2",
+    "date": "2025-12-20",
+    "project": "福至心靈籤",
+    "engineer": "Engineer B",
+    "workItem": "Reporting Module",
+    "timeSpent": 3.0,
+    "description": "Designed report layout"
+  },
+  {
+    "id": "3",
+    "date": "2025-12-21",
+    "project": "福至心靈籤",
+    "engineer": "Engineer A",
+    "workItem": "UI Implementation",
+    "timeSpent": 5.0,
+    "description": "Implemented input screen B & C"
+  },
+  {
+    "id": "4",
+    "date": "2025-12-21",
+    "project": "福至心靈籤",
+    "engineer": "Engineer B",
+    "workItem": "API Integration",
+    "timeSpent": 3.0,
+    "description": "Attempted API integration, encountered CORS issue"
+  },
+  {
+    "id": "5",
+    "date": "2025-12-22",
+    "project": "福至心靈籤",
+    "engineer": "Engineer A",
+    "workItem": "Integration",
+    "timeSpent": 3.0,
+    "description": "Integration testing and bug fixes"
+  },
+  {
+    "id": "6",
+    "date": "2025-12-22",
+    "project": "福至心靈籤",
+    "engineer": "Engineer C",
+    "workItem": "Backend API",
+    "timeSpent": 8.0,
+    "description": "API Development and CORS configuration"
+  }
+]

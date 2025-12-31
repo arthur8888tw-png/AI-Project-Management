@@ -1,0 +1,10 @@
+{
+  "conversationId": "336b26f3-3f2a-4fad-beb5-0a8bda46a425",
+  "eventType": "user_question",
+  "timestamp": "2025-12-30T13:24:14.339Z",
+  "eventId": "evt_1767101054340_d9ff6188",
+  "metadata": {
+    "questionText": "這是一個測試問題,用於驗證時間戳記系統是否正常運作。",
+    "questionLength": 26
+  }
+}

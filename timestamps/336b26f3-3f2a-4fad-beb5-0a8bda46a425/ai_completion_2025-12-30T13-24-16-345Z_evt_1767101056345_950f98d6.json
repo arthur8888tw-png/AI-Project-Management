@@ -1,0 +1,14 @@
+{
+  "conversationId": "336b26f3-3f2a-4fad-beb5-0a8bda46a425",
+  "eventType": "ai_completion",
+  "timestamp": "2025-12-30T13:24:16.345Z",
+  "eventId": "evt_1767101056345_950f98d6",
+  "metadata": {
+    "taskSummary": "完成測試任務",
+    "complexity": 5,
+    "modifiedFiles": [
+      "test_file.js"
+    ],
+    "fileCount": 1
+  }
+}

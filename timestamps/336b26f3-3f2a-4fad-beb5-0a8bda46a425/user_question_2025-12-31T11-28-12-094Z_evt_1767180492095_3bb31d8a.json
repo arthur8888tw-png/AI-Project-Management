@@ -1,0 +1,10 @@
+{
+  "conversationId": "336b26f3-3f2a-4fad-beb5-0a8bda46a425",
+  "eventType": "user_question",
+  "timestamp": "2025-12-31T11:28:12.094Z",
+  "eventId": "evt_1767180492095_3bb31d8a",
+  "metadata": {
+    "questionText": "現在統計看看 - (修正排序Bug)",
+    "questionLength": 18
+  }
+}

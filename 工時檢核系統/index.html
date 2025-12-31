@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineer Work Verification System</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Engineer Work Verification System</h1>
+            <p class="subtitle">Track and analyze engineering work logs, time spent, and project progress.</p>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-title">Total Hours Recorded</div>
+                <div class="stat-value" id="totalHours">0h</div>
+                <div class="stat-label">For selected period</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Active Projects</div>
+                <div class="stat-value" id="projectCount">0</div>
+                <div class="stat-label">In current view</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Work Logs</div>
+                <div class="stat-value" id="logCount">0</div>
+                <div class="stat-label">Total entries found</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="form-group">
+                <label for="projectFilter">Filter by Project</label>
+                <select id="projectFilter">
+                    <option value="all">All Projects</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="startDate">From Date</label>
+                <input type="date" id="startDate">
+            </div>
+            <div class="form-group">
+                <label for="endDate">To Date</label>
+                <input type="date" id="endDate">
+            </div>
+            <div style="flex-grow: 1;"></div>
+            <button id="addLogBtn">+ Add New Log</button>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="card">
+                <canvas id="projectChart"></canvas>
+            </div>
+            <div class="card">
+                <canvas id="dateChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card">
+            <div class="card-title">Work Log Details</div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Project</th>
+                            <th>Engineer</th>
+                            <th>Work Item</th>
+                            <th>Time Spent</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        <!-- Rows rendered via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Log Modal -->
+    <div class="modal" id="addLogModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Work Log</h2>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="logForm">
+                <div class="modal-grid">
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project">Project Name</label>
+                        <input type="text" id="project" name="project" placeholder="e.g. Project Alpha" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="engineer">Engineer Name</label>
+                        <input type="text" id="engineer" name="engineer" placeholder="e.g. John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workItem">Work Item</label>
+                        <input type="text" id="workItem" name="workItem" placeholder="e.g. API Development" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeSpent">Time Spent (Hours)</label>
+                        <input type="number" id="timeSpent" name="timeSpent" step="0.5" min="0" placeholder="0.0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description (Optional)</label>
+                        <input type="text" id="description" name="description" placeholder="Brief details...">
+                    </div>
+                    <button type="submit" style="margin-top: 1rem; width: 100%;">Save Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
